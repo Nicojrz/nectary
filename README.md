@@ -2,7 +2,7 @@
 
 Una plataforma donde diseñadores, músicos, escritores y desarrolladores comparten "Sparks" (chispazos creativos), documentan su proceso a través de "WIPs" (trabajos en progreso), y reflexionan sobre su aprendizaje mediante "Post-Mortems". Cuenta con un sistema de *forking* para una evolución transparente de ideas, gamificación con XP y medallas, y recomendaciones contextuales.
 
-(Se puede recortar a quienes esta dirigido)
+(Se puede recortar a quienes esta dirigido, checar el documento de SITUACION_INICIAL.md)
 
 
 ---
