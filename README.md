@@ -1,36 +1,466 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nectary — Plataforma de Comunidad Creativa
 
-## Getting Started
+Una plataforma donde diseñadores, músicos, escritores y desarrolladores comparten "Sparks" (chispazos creativos), documentan su proceso a través de "WIPs" (trabajos en progreso), y reflexionan sobre su aprendizaje mediante "Post-Mortems". Cuenta con un sistema de *forking* para una evolución transparente de ideas, gamificación con XP y medallas, y recomendaciones contextuales.
 
-First, run the development server:
+(Se puede recortar a quienes esta dirigido)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+---
+
+## 📋 Tabla de Contenidos
+
+- [Stack Tecnológico](#-stack-tecnológico)
+- [Resumen de Arquitectura](#-resumen-de-arquitectura)
+- [Estructura del Proyecto](#-estructura-del-proyecto)
+- [Para Empezar](#-para-empezar)
+- [Rutas y Páginas](#-rutas-y-páginas)
+- [Endpoints de API](#-endpoints-de-api)
+- [Sistema de Diseño](#-sistema-de-diseño)
+- [Módulos y Asignación de Equipo](#-módulos-y-asignación-de-equipo)
+- [Flujo de Trabajo de Desarrollo](#-flujo-de-trabajo-de-desarrollo)
+- [Variables de Entorno](#-variables-de-entorno)
+- [Decisiones de Diseño Clave](#-decisiones-de-diseño-clave)
+
+---
+
+## 🛠 Stack Tecnológico
+
+| Capa              | Tecnología                 | Propósito                                        |
+|-------------------|----------------------------|--------------------------------------------------|
+| **Framework**     | Next.js 16 (App Router)    | SSR/SSG/ISR, API Routes, enrutamiento por archivos|
+| **Lenguaje**      | TypeScript                 | Tipado seguro de extremo a extremo               |
+| **Estilos**       | Tailwind CSS 4             | CSS utilitario con tokens de diseño              |
+| **Íconos**        | Lucide React               | Librería de íconos consistente                   |
+| **Auth y BD**     | Supabase                   | PostgreSQL + Auth + Storage + Realtime           |
+| **SDK Supabase**  | `@supabase/ssr`            | Soporte para componentes de Servidor y Cliente   |
+| **i18n**          | next-intl                  | Español + Inglés                                 |
+| **Despliegue**    | Vercel (recomendado)       | Optimizado para Next.js                          |
+
+---
+
+## 🏗 Resumen de Arquitectura
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                      NAVEGADOR                            │
+│  ┌────────────┐  ┌────────────┐  ┌────────────────────┐  │
+│  │ Landing    │  │ Páginas Auth│  │ Shell Principal     │  │
+│  │ (público)  │  │ (público)  │  │ (autenticado)       │  │
+│  └────────────┘  └────────────┘  │  ┌───────────────┐  │  │
+│                                   │  │ Feed          │  │  │
+│                                   │  │ Detalle Spark │  │  │
+│                                   │  │ Detalle WIP   │  │  │
+│                                   │  │ Post-Mortem   │  │  │
+│                                   │  │ Perfil        │  │  │
+│                                   │  │ Leaderboard   │  │  │
+│                                   │  │ Configuración │  │  │
+│                                   │  └───────────────┘  │  │
+│                                   └────────────────────┘  │
+└──────────────────────────┬───────────────────────────────┘
+                           │  HTTP (fetch / Server Actions)
+┌──────────────────────────▼───────────────────────────────┐
+│                   SERVIDOR NEXT.JS                        │
+│  ┌─────────────────────────────────────────────────────┐  │
+│  │  API Route Handlers (/api/*)                        │  │
+│  │  ┌──────────┐ ┌──────┐ ┌─────────────┐ ┌────────┐  │  │
+│  │  │ /sparks  │ │/wips │ │/post-mortems│ │ /feed  │  │  │
+│  │  └──────────┘ └──────┘ └─────────────┘ └────────┘  │  │
+│  │  ┌──────────┐ ┌──────┐ ┌─────────────────────────┐  │  │
+│  │  │ /forks   │ │/react│ │ /notifications          │  │  │
+│  │  └──────────┘ └──────┘ └─────────────────────────┘  │  │
+│  └─────────────────────────┬───────────────────────────┘  │
+│                             │                              │
+│  ┌─────────────────────────▼───────────────────────────┐  │
+│  │  Cliente Supabase (Lado Servidor)                   │  │
+│  │  @supabase/ssr                                      │  │
+│  └─────────────────────────┬───────────────────────────┘  │
+└──────────────────────────┬─┘─────────────────────────────┘
+                           │
+┌──────────────────────────▼───────────────────────────────┐
+│                    SUPABASE                               │
+│  ┌──────────────┐ ┌────────┐ ┌──────────┐ ┌──────────┐  │
+│  │ PostgreSQL   │ │  Auth  │ │ Storage  │ │ Realtime │  │
+│  │ (RLS + FTS)  │ │        │ │ (archivos) │ │ (notif.) │  │
+│  └──────────────┘ └────────┘ └──────────┘ └──────────┘  │
+└──────────────────────────────────────────────────────────┘
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Patrones Clave
+- **Server Components por defecto** — la obtención de datos se hace en el servidor
+- **Client Components** únicamente para elementos interactivos (formularios, reacciones, filtros)
+- **API Route Handlers** para mutaciones y consultas complejas
+- **Supabase RLS** (Row Level Security) para autorización a nivel de base de datos
+- **Auth basado en cookies** mediante `@supabase/ssr` — funciona tanto en componentes de servidor como de cliente
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📁 Estructura del Proyecto
 
-## Learn More
+```
+nectary/
+├── src/
+│   ├── app/                          # Next.js App Router
+│   │   ├── globals.css               # Tokens del sistema de diseño (colores, espaciado, animaciones)
+│   │   ├── layout.tsx                # Root layout (fuentes, metadata)
+│   │   ├── page.tsx                  # Landing page (público)
+│   │   │
+│   │   ├── (auth)/                   # Grupo de rutas de Auth (sin navbar)
+│   │   │   ├── layout.tsx            # Layout de tarjeta centrada
+│   │   │   ├── login/page.tsx        # RF-GU-02, RF-GU-03
+│   │   │   ├── register/page.tsx     # RF-GU-01
+│   │   │   └── recovery/page.tsx     # RF-GU-06
+│   │   │
+│   │   ├── (main)/                   # Grupo de rutas principal (con navbar)
+│   │   │   ├── layout.tsx            # Shell de aplicación con Navbar
+│   │   │   ├── feed/page.tsx         # RF-FD-01, RF-FD-02
+│   │   │   ├── spark/
+│   │   │   │   ├── new/page.tsx      # RF-SP-01, RF-SP-02
+│   │   │   │   └── [id]/page.tsx     # RF-SP-04, RF-SP-05
+│   │   │   ├── wip/
+│   │   │   │   ├── new/page.tsx      # RF-WP-01
+│   │   │   │   └── [id]/page.tsx     # RF-WP-02, RF-WP-03
+│   │   │   ├── post-mortem/
+│   │   │   │   ├── new/page.tsx      # RF-PM-01, RF-PM-02
+│   │   │   │   └── [id]/page.tsx     # RNF-PM-01 (SSG/ISR)
+│   │   │   ├── profile/
+│   │   │   │   └── [username]/page   # RF-GU-04, RF-KM-03
+│   │   │   ├── settings/page.tsx     # RF-GU-05
+│   │   │   └── leaderboard/page.tsx  # RF-KM-04
+│   │   │
+│   │   └── api/                      # API Route Handlers
+│   │       ├── feed/route.ts         # Endpoint unificado del feed
+│   │       ├── sparks/
+│   │       │   ├── route.ts          # GET (listar), POST (crear)
+│   │       │   └── [id]/route.ts     # GET, PATCH, DELETE
+│   │       ├── wips/
+│   │       │   ├── route.ts          # GET (listar), POST (crear)
+│   │       │   └── [id]/
+│   │       │       ├── route.ts      # GET, PATCH, DELETE
+│   │       │       └── comments/route.ts  # GET, POST
+│   │       ├── post-mortems/
+│   │       │   ├── route.ts          # GET (listar/buscar), POST
+│   │       │   └── [id]/route.ts     # GET, PATCH, DELETE
+│   │       ├── reactions/route.ts    # POST, DELETE
+│   │       ├── forks/route.ts        # GET (árbol), POST (forkear)
+│   │       └── notifications/route.ts # GET, PATCH (marcar como leído)
+│   │
+│   ├── components/                   # Componentes React
+│   │   ├── layout/
+│   │   │   └── navbar.tsx            # Navegación principal + selector de estado creativo
+│   │   ├── feed/
+│   │   │   ├── spark-card.tsx        # Card para feed de Spark
+│   │   │   ├── wip-card.tsx          # Card para feed de WIP
+│   │   │   ├── post-mortem-card.tsx  # Card para feed de Post-Mortem
+│   │   │   └── feed-filters.tsx      # Filtros por disciplina/tipo/etiqueta
+│   │   ├── fork/
+│   │   │   └── fork-tree.tsx         # Visualización de árbol de forks
+│   │   ├── gamification/
+│   │   │   └── xp-badge.tsx          # Pantalla de XP y nivel
+│   │   ├── editors/                  # TODO: Editores enriquecidos por cada tipo de post
+│   │   └── ui/                       # TODO: Primitivas base de UI (Botón, Input, etc.)
+│   │
+│   ├── hooks/                        # Custom React Hooks
+│   │   ├── index.ts                  # Exportación unificada (Barrel)
+│   │   └── use-auth.ts              # Hook de auth para Supabase
+│   │
+│   ├── lib/                          # Librerías Compartidas
+│   │   ├── utils.ts                  # cn(), formatRelativeTime, cálculos de XP, etc.
+│   │   └── supabase/
+│   │       ├── client.ts             # Cliente navegador (Client Components)
+│   │       ├── server.ts             # Cliente servidor (Server Components, API Routes)
+│   │       └── middleware.ts         # Middleware para refresco de sesión
+│   │
+│   ├── types/                        # Definiciones TypeScript
+│   │   └── index.ts                  # Todos los tipos compartidos, enums, constantes
+│   │
+│   └── middleware.ts                 # Next.js middleware (refresco de sesión)
+│
+├── public/                           # Assets estáticos
+├── .env.example                      # Plantilla de variables de entorno
+├── next.config.ts                    # Configuración de Next.js
+├── tsconfig.json                     # Configuración de TypeScript
+├── postcss.config.mjs                # PostCSS (Tailwind)
+├── eslint.config.mjs                 # Configuración de ESLint
+└── package.json                      # Dependencias & scripts
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🚀 Para Empezar
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Prerrequisitos
+- **Node.js** 18+ (recomendado: 20+)
+- **npm** 9+
+- Un proyecto en **Supabase** ([crear uno aquí](https://supabase.com/dashboard))
 
-## Deploy on Vercel
+### Instalación
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+# 1. Clonar el repositorio
+git clone <repo-url>
+cd nectary
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# 2. Instalar dependencias
+npm install
+
+# 3. Configurar entorno
+cp .env.example .env.local
+# Editar .env.local con las credenciales de tu proyecto Supabase
+
+# 4. Iniciar servidor de desarrollo
+npm run dev
+
+# 5. Abrir en el navegador
+# → http://localhost:3000
+```
+
+### Comandos (Scripts)
+
+| Comando         | Descripción                        |
+|----------------|------------------------------------|
+| `npm run dev`  | Inicia el servidor de desarrollo (Turbopack) |
+| `npm run build`| Compilación de producción          |
+| `npm run start`| Inicia servidor de producción      |
+| `npm run lint` | Ejecuta validación con ESLint      |
+
+---
+
+## 🗺 Rutas y Páginas
+
+### Rutas Públicas (sin auth)
+| Ruta            | Descripción               | Requerimientos |
+|----------------|---------------------------|----------------|
+| `/`            | Landing page              | —              |
+| `/login`       | Formulario de inicio de sesión | RF-GU-02/03    |
+| `/register`    | Formulario de registro    | RF-GU-01       |
+| `/recovery`    | Recuperación de contraseña | RF-GU-06       |
+| `/spark/[id]`  | Vista pública de Spark    | RF-SP-04       |
+| `/post-mortem/[id]` | Vista pública Post-Mortem | RNF-PM-01      |
+
+### Rutas Protegidas (requieren auth)
+| Ruta                   | Descripción            | Requerimientos |
+|-----------------------|------------------------|----------------|
+| `/feed`               | Feed principal         | RF-FD-01/02    |
+| `/spark/new`          | Crear Spark            | RF-SP-01/02    |
+| `/wip/new`            | Crear WIP              | RF-WP-01       |
+| `/wip/[id]`           | Detalle de WIP + comentarios | RF-WP-02/03    |
+| `/post-mortem/new`    | Crear Post-Mortem      | RF-PM-01/02    |
+| `/profile/[username]` | Perfil de usuario      | RF-GU-04       |
+| `/settings`           | Editar perfil          | RF-GU-05       |
+| `/leaderboard`        | Tabla de clasificación XP | RF-KM-04       |
+
+---
+
+## 🔌 Endpoints de API
+
+Todas las rutas de la API se encuentran en `/api/` y siguen las convenciones REST.
+
+| Método   | Endpoint                        | Módulo | Descripción                      |
+|----------|---------------------------------|--------|----------------------------------|
+| `GET`    | `/api/feed`                     | FD     | Feed unificado y paginado        |
+| `GET`    | `/api/sparks`                   | SP     | Listar sparks                    |
+| `POST`   | `/api/sparks`                   | SP     | Crear spark                      |
+| `GET`    | `/api/sparks/[id]`              | SP     | Obtener spark                    |
+| `PATCH`  | `/api/sparks/[id]`              | SP     | Actualizar spark                 |
+| `DELETE` | `/api/sparks/[id]`              | SP     | Eliminar spark                   |
+| `GET`    | `/api/wips`                     | WP     | Listar WIPs                      |
+| `POST`   | `/api/wips`                     | WP     | Crear WIP                        |
+| `GET`    | `/api/wips/[id]`                | WP     | Obtener WIP                      |
+| `PATCH`  | `/api/wips/[id]`                | WP     | Actualizar WIP (cambio estado)   |
+| `DELETE` | `/api/wips/[id]`                | WP     | Eliminar WIP                     |
+| `GET`    | `/api/wips/[id]/comments`       | WP     | Listar comentarios de WIP        |
+| `POST`   | `/api/wips/[id]/comments`       | WP     | Agregar comentario               |
+| `GET`    | `/api/post-mortems`             | PM     | Listar/buscar post-mortems       |
+| `POST`   | `/api/post-mortems`             | PM     | Crear post-mortem                |
+| `GET`    | `/api/post-mortems/[id]`        | PM     | Obtener post-mortem              |
+| `PATCH`  | `/api/post-mortems/[id]`        | PM     | Actualizar (versionado)          |
+| `DELETE` | `/api/post-mortems/[id]`        | PM     | Eliminar post-mortem             |
+| `POST`   | `/api/reactions`                | SP/WP/PM| Agregar reacción                |
+| `DELETE` | `/api/reactions`                | SP/WP/PM| Eliminar reacción               |
+| `GET`    | `/api/forks`                    | FK     | Obtener árbol de forks           |
+| `POST`   | `/api/forks`                    | FK     | Hacer fork a un post             |
+| `GET`    | `/api/notifications`            | —      | Obtener notificaciones del usuario|
+| `PATCH`  | `/api/notifications`            | —      | Marcar notificaciones como leídas|
+
+---
+
+## 🎨 Sistema de Diseño
+
+El sistema de diseño está definido en `src/app/globals.css` utilizando custom properties de CSS integradas en Tailwind vía `@theme`.
+
+### Tokens de Color
+
+| Token                    | Uso                            | Color          |
+|--------------------------|--------------------------------|----------------|
+| `--primary`              | Marca principal, Botones (CTAs)| `#6d28d9`      |
+| `--accent`               | Color secundario/Acento        | `#f59e0b`      |
+| `--background`           | Fondo de página                | `#fafaf9`      |
+| `--card`                 | Superficies de tarjetas        | `#ffffff`      |
+| `--muted`                | Fondos apagados/suaves         | `#f5f5f4`      |
+
+### Colores de Disciplinas
+
+| Disciplina    | Variable CSS               | Color     |
+|--------------|----------------------------|-----------|
+| Diseño       | `--discipline-design`      | `#ec4899` |
+| Música       | `--discipline-music`       | `#8b5cf6` |
+| Escritura    | `--discipline-writing`     | `#06b6d4` |
+| Desarrollo   | `--discipline-dev`         | `#10b981` |
+| Otros        | `--discipline-other`       | `#f59e0b` |
+
+### Colores por Tipo de Post
+
+| Tipo         | Variable CSS       | Color     |
+|-------------|-------------------|-----------|
+| Spark       | `--spark`         | `#f59e0b` |
+| WIP         | `--wip`           | `#3b82f6` |
+| Post-Mortem | `--postmortem`    | `#8b5cf6` |
+
+### Uso en Tailwind
+
+```tsx
+// Usa los tokens directamente en las clases de Tailwind:
+<div className="bg-primary text-primary-foreground" />
+<span className="text-discipline-design" />
+<article className="border-spark/50" />
+<p className="text-muted-foreground" />
+```
+
+### Clases Utilitarias Disponibles
+
+| Clase                   | Descripción                              |
+|------------------------|------------------------------------------|
+| `.glass`               | Efecto glassmorphism (desenfoque + borde)|
+| `.text-gradient-primary`| Texto con gradiente (primario → acento) |
+| `.animate-fade-in`     | Aparecer y deslizar hacia arriba (0.3s) |
+| `.animate-slide-up`    | Deslizamiento de entrada (0.4s)         |
+| `.animate-pulse-glow`  | Resplandor pulsante circular (marca)    |
+
+---
+
+## 👥 Módulos y Asignación de Equipo
+
+El proyecto está dividido en **6 módulos** que pueden trabajarse en paralelo. A continuación se presenta una distribución sugerida para un equipo de 5 miembros:
+
+### Distribución Sugerida
+
+| Miembro | Módulo(s)                      | Archivos Clave                                      | Prioridad |
+|--------|-------------------------------|-----------------------------------------------------|----------|
+| **M1** | Auth (GU) + Middleware        | `(auth)/*`, `hooks/use-auth.ts`, `lib/supabase/*`, `api/` endpoints auth | 🔴 Alta |
+| **M2** | Sparks (SP) + Feed (FD)       | `spark/*`, `feed/*`, `api/sparks/*`, `api/feed/*`, `components/feed/*` | 🔴 Alta |
+| **M3** | WIPs (WP) + Post-Mortems (PM) | `wip/*`, `post-mortem/*`, `api/wips/*`, `api/post-mortems/*` | 🔴 Alta |
+| **M4** | Forking (FK) + Reacciones     | `api/forks/*`, `api/reactions/*`, `components/fork/*` | 🟡 Media |
+| **M5** | Gamification (KM) + Perfil    | `leaderboard/*`, `profile/*`, `settings/*`, `components/gamification/*` | 🟡 Media |
+
+### Orden de Dependencias de los Módulos
+
+```
+M1 (Auth) ──────────────────────┐
+                                │
+M2 (Sparks + Feed) ────────────┤
+                                ├──► M4 (Forking + Reacciones)
+M3 (WIPs + Post-Mortems) ──────┤
+                                │
+                                └──► M5 (Gamification + Perfil)
+```
+
+> **⚠️ M1 (Auth) debe completarse primero** — el resto de módulos dependen de la autenticación de usuarios. M2 y M3 pueden desarrollarse en paralelo. M4 y M5 dependen de que M2 y M3 tengan CRUDs básicos.
+
+### Trazabilidad de Requerimientos
+
+Cada página y ruta de la API incluye comentarios con los IDs de requerimiento que implementan (por ejemplo, `RF-SP-01`, `RNF-PM-01`). Puedes buscar estos IDs en el código:
+
+```bash
+# Encontrar todos los archivos relacionados a un requerimiento
+grep -r "RF-SP-01" src/
+```
+
+---
+
+## 🔄 Flujo de Trabajo de Desarrollo
+
+### Estrategia de Ramas (Branching)
+
+```
+main
+├── develop
+│   ├── feature/auth-login          (M1)
+│   ├── feature/auth-register       (M1)
+│   ├── feature/spark-crud          (M2)
+│   ├── feature/feed-page           (M2)
+│   ├── feature/wip-crud            (M3)
+│   ├── feature/postmortem-crud     (M3)
+│   ├── feature/fork-system         (M4)
+│   ├── feature/reactions           (M4)
+│   ├── feature/gamification-xp     (M5)
+│   └── feature/profile-page       (M5)
+```
+
+### Convenciones
+
+- **Commits**: Utilizar [Conventional Commits](https://www.conventionalcommits.org/)
+  - `feat(sparks): add spark creation form — RF-SP-01`
+  - `fix(auth): resolve JWT refresh issue — RF-GU-02`
+- **Componentes**: Archivos en PascalCase, un componente por archivo
+- **API Routes**: Usar la convención `route.ts`, siempre validar inputs
+- **Tipos**: Definir en `src/types/index.ts`, importar con `@/types`
+- **Cliente Supabase**:
+  - Server Components → `import { createClient } from "@/lib/supabase/server"`
+  - Client Components → `import { createClient } from "@/lib/supabase/client"`
+
+---
+
+## 🔐 Variables de Entorno
+
+| Variable                         | Requerida | Descripción                    |
+|----------------------------------|----------|--------------------------------|
+| `NEXT_PUBLIC_SUPABASE_URL`       | ✅       | URL del proyecto Supabase      |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`  | ✅       | Llave pública/anónima de Supabase|
+| `NEXT_PUBLIC_APP_URL`            | ❌       | URL de la app (default: localhost)|
+
+Configuración:
+```bash
+cp .env.example .env.local
+# Llena el archivo con tus credenciales de Supabase desde:
+# https://supabase.com/dashboard/project/YOUR_PROJECT/settings/api
+```
+
+---
+
+## 🧠 Decisiones de Diseño Clave
+
+### 1. Polimorfismo de Tipos de Post
+Los Sparks, WIPs y Post-Mortems utilizan **tablas separadas** en Supabase con relaciones polimórficas para comportamientos compartidos (reacciones, forks, disciplinas). Esto evita tener columnas nulas innecesarias.
+
+### 2. Supabase como Todo en Uno
+Se utiliza Supabase para autenticación, base de datos, almacenamiento y tiempo real (realtime) en lugar de utilizar servicios separados, lo que simplifica en gran medida la arquitectura tecnológica para un equipo estudiantil.
+
+### 3. Idempotencia de XP (RNF-KM-01)
+Cada evento que otorga puntos de experiencia (XP) emplea una clave de idempotencia compuesta (`action:actor:target`) para evitar premiar la misma acción de forma duplicada. Ver la función `generateXPIdempotencyKey()` en `src/lib/utils.ts`.
+
+### 4. Árbol de Forks (Materialized Paths)
+El sistema de ramificación de ideas (forks) usa *Materialized Paths* (por ejemplo, `/root/child1/child2`) lo que permite realizar consultas de ancestros y descendientes de forma eficiente sin necesidad de CTEs recursivas en SQL.
+
+### 5. Estado Creativo en el Feed (RF-FD-03/04)
+El estado creativo del usuario (En flujo, Bloqueo Leve, Bloqueo Severo) se almacena en su perfil y se usa para adaptar el contenido del Feed. Por ejemplo, en modo "Bloqueo Severo", el feed dará prioridad a mostrar Sparks rápidos y reflexiones de Post-Mortems resueltos para inspirar.
+
+### 6. Autenticación por Cookies con `@supabase/ssr`
+En lugar de manejar tokens JWT de forma manual en LocalStorage, usamos el paquete SSR de Supabase que administra sesiones directamente con Cookies. Esto garantiza compatibilidad nativa con los React Server Components.
+
+---
+
+## 📄 Licencia
+
+Este proyecto tiene propósitos académicos y de portfolio.
+
+---
+
+## 🤝 Equipo
+
+| Rol | Nombre |
+|------|------|
+| Miembro 1 | [Nombre] — Auth & Middleware |
+| Miembro 2 | [Nombre] — Sparks & Feed |
+| Miembro 3 | [Nombre] — WIPs & Post-Mortems |
+| Miembro 4 | [Nombre] — Forking & Reacciones |
+| Miembro 5 | [Nombre] — Gamificación & Perfil |

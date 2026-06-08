@@ -1,26 +1,199 @@
 @import "tailwindcss";
 
+/* ============================================================
+   NECTARY — Design System Tokens
+   ============================================================
+   This file defines the global design system for Nectary.
+   All color, spacing, and typography tokens are defined here
+   as CSS custom properties and exposed via Tailwind's @theme.
+   ============================================================ */
+
+/* --- Light Mode (default) --- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --background: #fafaf9;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+
+  /* Brand */
+  --primary: #6d28d9;
+  --primary-foreground: #faf5ff;
+  --secondary: #f5f3ff;
+  --secondary-foreground: #6d28d9;
+
+  /* Accents */
+  --accent: #f59e0b;
+  --accent-foreground: #451a03;
+  --muted: #f5f5f4;
+  --muted-foreground: #78716c;
+
+  /* Semantic */
+  --destructive: #ef4444;
+  --destructive-foreground: #fef2f2;
+  --success: #10b981;
+  --success-foreground: #ecfdf5;
+  --warning: #f59e0b;
+  --warning-foreground: #fffbeb;
+  --info: #3b82f6;
+  --info-foreground: #eff6ff;
+
+  /* Borders & Rings */
+  --border: #e7e5e4;
+  --input: #e7e5e4;
+  --ring: #6d28d9;
+
+  /* Radius */
+  --radius: 0.75rem;
+
+  /* Discipline Colors */
+  --discipline-design: #ec4899;
+  --discipline-music: #8b5cf6;
+  --discipline-writing: #06b6d4;
+  --discipline-dev: #10b981;
+  --discipline-other: #f59e0b;
+
+  /* Post Type Colors */
+  --spark: #f59e0b;
+  --wip: #3b82f6;
+  --postmortem: #8b5cf6;
+
+  /* Creative State Colors */
+  --state-flow: #10b981;
+  --state-mild-block: #f59e0b;
+  --state-severe-block: #ef4444;
 }
 
+
+/* --- Tailwind Theme Mapping --- */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Discipline colors */
+  --color-discipline-design: var(--discipline-design);
+  --color-discipline-music: var(--discipline-music);
+  --color-discipline-writing: var(--discipline-writing);
+  --color-discipline-dev: var(--discipline-dev);
+  --color-discipline-other: var(--discipline-other);
+
+  /* Post type colors */
+  --color-spark: var(--spark);
+  --color-wip: var(--wip);
+  --color-postmortem: var(--postmortem);
+
+  /* Creative state colors */
+  --color-state-flow: var(--state-flow);
+  --color-state-mild-block: var(--state-mild-block);
+  --color-state-severe-block: var(--state-severe-block);
+
+  /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 8px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* --- Base Styles --- */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Utility Classes --- */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.text-gradient-primary {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* --- Scrollbar Styling --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground);
+}
+
+/* --- Focus Ring --- */
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* --- Animations --- */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(109, 40, 217, 0.4); }
+  50%      { box-shadow: 0 0 16px 4px rgba(109, 40, 217, 0.2); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
 }
