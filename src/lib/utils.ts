@@ -1,15 +1,16 @@
 import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 /**
  * Utility to merge Tailwind CSS class names.
- * Combines clsx for conditional classes.
+ * Combines clsx for conditional classes and twMerge for resolving tailwind conflicts.
  *
  * Usage:
  *   import { cn } from "@/lib/utils";
  *   <div className={cn("base-class", isActive && "active-class")} />
  */
 export function cn(...inputs: ClassValue[]) {
-  return clsx(inputs);
+  return twMerge(clsx(inputs));
 }
 
 /**

@@ -34,6 +34,7 @@ Las siguientes tablas ya existen en tu proyecto de Supabase con RLS activo:
 - **25+ rutas y páginas** scaffoldeadas con stubs y comentarios `TODO:`
 - **14 API endpoints** en `/api/` listos para implementar
 - **Tipos TypeScript** en `src/types/index.ts` alineados 1:1 con la BD
+- **Componentes UI base** en `src/components/ui/` (`Button`, `Input`, `Textarea`, `Label`) listos para usar
 - **Clientes Supabase** para servidor y cliente en `src/lib/supabase/`
 - **Middleware** con protección de rutas (activado al tener credenciales)
 - **Hook `useAuth`** para componentes cliente
@@ -90,7 +91,6 @@ npm run dev
 
 ## Cosas que TODAVÍA faltan
 
-- `tailwind-merge` por instalar (`npm install tailwind-merge`)
-- Componentes UI base: `Button`, `Input`, `Modal`, `Toast` — aún no existen en `components/ui/`
 - La vista materializada del leaderboard hay que refrescarla periódicamente. Se puede activar como **cron job** en Supabase (Database → Cron Jobs): `SELECT refresh_leaderboard();` cada hora.
+- Modal y Toast (las notificaciones) — aún no existen en `components/ui/`, hay que crearlos cuando se necesiten.
 - Tests — ninguno por ahora, definir estrategia con el equipo
