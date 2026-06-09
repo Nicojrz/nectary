@@ -1,6 +1,6 @@
-# Nectary — Plataforma de Comunidad Creativa
+# Nectary — Plataforma de Escritura Creativa
 
-Una plataforma donde diseñadores, músicos, escritores y desarrolladores comparten "Sparks" (chispazos creativos), documentan su proceso a través de "WIPs" (trabajos en progreso), y reflexionan sobre su aprendizaje mediante "Post-Mortems". Cuenta con un sistema de *forking* para una evolución transparente de ideas, gamificación con XP y medallas, y recomendaciones contextuales.
+Una plataforma exclusivamente para **escritores**. Los usuarios comparten "Sparks" (fragmentos e ideas en texto), documentan proyectos en curso mediante "WIPs" y reflexionan sobre bloqueos superados en "Post-Mortems". Cuenta con un sistema de *forking* para rastrear la evolución de ideas, gamificación con XP y recomendaciones adaptadas al estado creativo del escritor.
 
 (Se puede recortar a quienes esta dirigido, checar el documento de SITUACION_INICIAL.md)
 
@@ -33,7 +33,6 @@ Una plataforma donde diseñadores, músicos, escritores y desarrolladores compar
 | **Íconos**        | Lucide React               | Librería de íconos consistente                   |
 | **Auth y BD**     | Supabase                   | PostgreSQL + Auth + Storage + Realtime           |
 | **SDK Supabase**  | `@supabase/ssr`            | Soporte para componentes de Servidor y Cliente   |
-| **i18n**          | next-intl                  | Español + Inglés                                 |
 | **Despliegue**    | Vercel (recomendado)       | Optimizado para Next.js                          |
 
 ---
@@ -321,7 +320,7 @@ El sistema de diseño está definido en `src/app/globals.css` utilizando custom 
 ```tsx
 // Usa los tokens directamente en las clases de Tailwind:
 <div className="bg-primary text-primary-foreground" />
-<span className="text-discipline-design" />
+<span className="text-category-cuento" />
 <article className="border-spark/50" />
 <p className="text-muted-foreground" />
 ```
@@ -340,17 +339,17 @@ El sistema de diseño está definido en `src/app/globals.css` utilizando custom 
 
 ## 👥 Módulos y Asignación de Equipo
 
-El proyecto está dividido en **6 módulos** que pueden trabajarse en paralelo. A continuación se presenta una distribución sugerida para un equipo de 5 miembros:
+El proyecto está dividido en **5 módulos** que pueden trabajarse en paralelo. A continuación se presenta una distribución sugerida para un equipo de 5 miembros:
 
 ### Distribución Sugerida
 
-| Miembro | Módulo(s)                      | Archivos Clave                                      | Prioridad |
-|--------|-------------------------------|-----------------------------------------------------|----------|
-| **M1** | Auth (GU) + Middleware        | `(auth)/*`, `hooks/use-auth.ts`, `lib/supabase/*`, `api/` endpoints auth | 🔴 Alta |
-| **M2** | Sparks (SP) + Feed (FD)       | `spark/*`, `feed/*`, `api/sparks/*`, `api/feed/*`, `components/feed/*` | 🔴 Alta |
-| **M3** | WIPs (WP) + Post-Mortems (PM) | `wip/*`, `post-mortem/*`, `api/wips/*`, `api/post-mortems/*` | 🔴 Alta |
-| **M4** | Forking (FK) + Reacciones     | `api/forks/*`, `api/reactions/*`, `components/fork/*` | 🟡 Media |
-| **M5** | Gamification (KM) + Perfil    | `leaderboard/*`, `profile/*`, `settings/*`, `components/gamification/*` | 🟡 Media |
+| Miembro | Módulo(s)                      | Archivos Clave                                                                                    | Prioridad |
+|--------|-------------------------------|---------------------------------------------------------------------------------------------------|-----------|
+| **M1** | Auth (GU) + Middleware        | `(auth)/*`, `hooks/use-auth.ts`, `lib/supabase/*`                                                | 🔴 Alta   |
+| **M2** | Sparks (SP) + Feed (FD)       | `spark/*`, `feed/*`, `api/sparks/*`, `api/feed/*`, `components/feed/*`                           | 🔴 Alta   |
+| **M3** | WIPs (WP) + Post-Mortems (PM) | `wip/*`, `post-mortem/*`, `api/wips/*`, `api/post-mortems/*`                                     | 🔴 Alta   |
+| **M4** | Forking (FK) + Reacciones     | `api/forks/*`, `api/reactions/*`, `components/fork/*`                                            | 🟡 Media  |
+| **M5** | Gamificación (KM) + Perfil    | `leaderboard/*`, `profile/*`, `settings/*`, `components/gamification/*`                          | 🟡 Media  |
 
 ### Orden de Dependencias de los Módulos
 
@@ -399,11 +398,12 @@ main
 ### Convenciones
 
 - **Commits**: Utilizar [Conventional Commits](https://www.conventionalcommits.org/)
-  - `feat(sparks): add spark creation form — RF-SP-01`
-  - `fix(auth): resolve JWT refresh issue — RF-GU-02`
+  - `feat(sparks): add spark creation form — CU-SP-01`
+  - `fix(auth): resolve JWT refresh issue — CU-GU-02`
 - **Componentes**: Archivos en PascalCase, un componente por archivo
 - **API Routes**: Usar la convención `route.ts`, siempre validar inputs
 - **Tipos**: Definir en `src/types/index.ts`, importar con `@/types`
+  - Usar `LiteraryCategory` (no `Discipline`) para categorías
 - **Cliente Supabase**:
   - Server Components → `import { createClient } from "@/lib/supabase/server"`
   - Client Components → `import { createClient } from "@/lib/supabase/client"`
@@ -429,23 +429,29 @@ cp .env.example .env.local
 
 ## 🧠 Decisiones de Diseño Clave
 
-### 1. Polimorfismo de Tipos de Post
-Los Sparks, WIPs y Post-Mortems utilizan **tablas separadas** en Supabase con relaciones polimórficas para comportamientos compartidos (reacciones, forks, disciplinas). Esto evita tener columnas nulas innecesarias.
+### 1. Solo texto plano
+Los Sparks y WIPs aceptan **únicamente texto plano** (sin imágenes, audio ni código). Esto simplifica el modelo de datos y centra la experiencia en la escritura (CU-SP-01, CU-WP-01).
 
-### 2. Supabase como Todo en Uno
-Se utiliza Supabase para autenticación, base de datos, almacenamiento y tiempo real (realtime) en lugar de utilizar servicios separados, lo que simplifica en gran medida la arquitectura tecnológica para un equipo estudiantil.
+### 2. Categorías literarias en lugar de disciplinas
+Se eliminó el tipo `Discipline` (design/music/writing/dev). Ahora todo el sistema usa `LiteraryCategory`: `cuento`, `poesia`, `novela`, `ensayo`. Ver `src/types/index.ts`.
 
-### 3. Idempotencia de XP (RNF-KM-01)
-Cada evento que otorga puntos de experiencia (XP) emplea una clave de idempotencia compuesta (`action:actor:target`) para evitar premiar la misma acción de forma duplicada. Ver la función `generateXPIdempotencyKey()` en `src/lib/utils.ts`.
+### 3. Tablas separadas por tipo de post
+Los Sparks, WIPs y Post-Mortems usan **tablas separadas** en Supabase con relaciones polimórficas para reacciones y forks. Evita columnas nulas innecesarias.
 
-### 4. Árbol de Forks (Materialized Paths)
-El sistema de ramificación de ideas (forks) usa *Materialized Paths* (por ejemplo, `/root/child1/child2`) lo que permite realizar consultas de ancestros y descendientes de forma eficiente sin necesidad de CTEs recursivas en SQL.
+### 4. Supabase como Todo en Uno
+Supabase cubre autenticación, base de datos, almacenamiento y realtime en un solo servicio, simplificando la arquitectura para un equipo estudiantil.
 
-### 5. Estado Creativo en el Feed (RF-FD-03/04)
-El estado creativo del usuario (En flujo, Bloqueo Leve, Bloqueo Severo) se almacena en su perfil y se usa para adaptar el contenido del Feed. Por ejemplo, en modo "Bloqueo Severo", el feed dará prioridad a mostrar Sparks rápidos y reflexiones de Post-Mortems resueltos para inspirar.
+### 5. Idempotencia de XP
+Cada evento de XP usa una clave compuesta (`action:actor:target`) para evitar doble premio. Ver `generateXPIdempotencyKey()` en `src/lib/utils.ts`.
 
-### 6. Autenticación por Cookies con `@supabase/ssr`
-En lugar de manejar tokens JWT de forma manual en LocalStorage, usamos el paquete SSR de Supabase que administra sesiones directamente con Cookies. Esto garantiza compatibilidad nativa con los React Server Components.
+### 6. Árbol de Forks persistente (CU-FK-01 — A2)
+El árbol de forks usa *Materialized Paths*. Si el post original se elimina, el nodo muestra `[Contenido eliminado]` en lugar de un enlace roto.
+
+### 7. Feed adaptado al estado creativo (CU-FD-01)
+El estado del usuario (Flujo / Bloqueo Leve / Bloqueo Severo) adapta el contenido del feed: en "Bloqueo Severo" se priorizan Sparks cortos y Post-Mortems resueltos.
+
+### 8. Modal de sugerencia PM (CU-WP-03)
+Cuando un autor cambia su WIP a "Resuelto", el sistema despliega automáticamente un modal invitándolo a redactar un Post-Mortem.
 
 ---
 
@@ -459,8 +465,8 @@ Este proyecto tiene propósitos académicos y de portfolio.
 
 | Rol | Nombre |
 |------|------|
-| Miembro 1 | [Nombre] — Auth & Middleware |
-| Miembro 2 | [Nombre] — Sparks & Feed |
-| Miembro 3 | [Nombre] — WIPs & Post-Mortems |
-| Miembro 4 | [Nombre] — Forking & Reacciones |
-| Miembro 5 | [Nombre] — Gamificación & Perfil |
+| Miembro 1 | [Nicolas Juarez] — Auth & Middleware |
+| Miembro 2 | [Sebastian Jara] — Sparks & Feed |
+| Miembro 3 | [Javier Reyna] — WIPs & Post-Mortems |
+| Miembro 4 | [Jimena Camacho] — Forking & Reacciones |
+| Miembro 5 | [Dylan Martinez] — Gamificación & Perfil |

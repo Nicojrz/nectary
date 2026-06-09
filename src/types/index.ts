@@ -3,6 +3,9 @@
  *
  * This file contains all shared types used across the application.
  * Types are organized by module to match the requirements document.
+ *
+ * NOTE: Platform scope is exclusively for writers.
+ * Literary categories replace the old multi-discipline system.
  */
 
 // ============================================================
@@ -12,18 +15,16 @@
 /** Types of publications on the platform */
 export type PostType = "spark" | "wip" | "post-mortem";
 
-/** Creative disciplines */
-export type Discipline =
-  | "design"
-  | "music"
-  | "writing"
-  | "development"
-  | "other";
+/**
+ * Literary categories for writers (CU-SP-01, CU-WP-01).
+ * Replaces the old multi-discipline system — platform is writing-only.
+ */
+export type LiteraryCategory = "cuento" | "poesia" | "novela" | "ensayo";
 
-/** WIP status states (RF-WP-03) */
+/** WIP status states (CU-WP-03) */
 export type WIPStatus = "blocked" | "in-progress" | "resolved";
 
-/** Creative state of a user (RF-FD-03) */
+/** Creative state of a user (CU-FD-01) */
 export type CreativeState = "flow" | "mild-block" | "severe-block";
 
 /** Notification types */
@@ -45,7 +46,8 @@ export interface User {
   name: string;
   avatarUrl: string | null;
   bio: string | null;
-  disciplines: Discipline[];
+  /** Literary categories the user is interested in */
+  categories: LiteraryCategory[];
   creativeState: CreativeState;
   xpTotal: number;
   level: number;
@@ -63,13 +65,19 @@ export interface UserProfile extends User {
 // Sparks Module (SP)
 // ============================================================
 
+/**
+ * Spark: short-form text post capturing a creative idea or fragment.
+ * Content is plain text only (CU-SP-01).
+ * Must have at least one literary category tag (CU-SP-01 — A3).
+ */
 export interface Spark {
   id: string;
   authorId: string;
   author?: User;
+  /** Plain text content only — no rich media (CU-SP-01) */
   content: string;
-  resources: SparkResource[];
-  disciplines: Discipline[];
+  /** At least one category required to publish (CU-SP-01 — A3) */
+  categories: LiteraryCategory[];
   tags: string[];
   reactionCounts: Record<string, number>;
   forkCount: number;
@@ -77,34 +85,31 @@ export interface Spark {
   createdAt: Date;
 }
 
-export interface SparkResource {
-  type: "image" | "audio" | "code" | "color-palette" | "text";
-  url?: string;
-  content?: string;
-  language?: string; // For code snippets
-  colors?: string[]; // For color palettes
-  mimeType?: string;
-}
-
 // ============================================================
 // WIPs Module (WP)
 // ============================================================
 
+/**
+ * WIP: an in-progress writing project.
+ * Content is plain text only (CU-WP-01).
+ */
 export interface WIP {
   id: string;
   authorId: string;
   author?: User;
   title: string;
+  /** Description of writing progress — plain text only */
   description: string;
+  /** Current creative block the author is experiencing */
   currentBlock: string | null;
   status: WIPStatus;
-  disciplines: Discipline[];
+  categories: LiteraryCategory[];
   tags: string[];
-  attachments: Attachment[];
   commentCount: number;
   reactionCounts: Record<string, number>;
   forkCount: number;
   parentForkId: string | null;
+  /** Linked post-mortem once WIP is resolved (CU-WP-03) */
   postMortemId: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -116,8 +121,6 @@ export interface Comment {
   author?: User;
   wipId: string;
   content: string;
-  codeBlock: string | null;
-  codeLanguage: string | null;
   createdAt: Date;
 }
 
@@ -125,21 +128,32 @@ export interface Comment {
 // Post-Mortems Module (PM)
 // ============================================================
 
+/**
+ * Post-Mortem: structured reflection on a resolved creative block.
+ * Has four required sections (CU-PM-01).
+ * Rendered via SSG/ISR and tagged with Open Graph metadata (CU-PM-01).
+ */
 export interface PostMortem {
   id: string;
   authorId: string;
   author?: User;
   title: string;
+  /** Section 1: background and context of the project */
   context: string;
+  /** Section 2: approaches that did not work */
   failedAttempts: string;
+  /** Section 3: what ultimately worked */
   solution: string;
+  /** Section 4: key takeaways */
   lessonsLearned: string;
-  disciplines: Discipline[];
+  categories: LiteraryCategory[];
   tags: string[];
-  attachments: Attachment[];
+  /** Linked WIP origin (optional — CU-PM-01 A1) */
   wipOriginId: string | null;
   reactionCounts: Record<string, number>;
+  /** Counter for "Me desbloqueó" reactions (CU-PM-01) */
   unblockedCount: number;
+  /** Version tracking for edit history (CU-PM-01 A2) */
   version: number;
   createdAt: Date;
   updatedAt: Date;
@@ -149,6 +163,11 @@ export interface PostMortem {
 // Forking Module (FK)
 // ============================================================
 
+/**
+ * Fork: a derivative idea created from a Spark or WIP.
+ * Motivation text is mandatory (CU-FK-01 — A1).
+ * Fork tree persists even if original is deleted (CU-FK-01 — A2).
+ */
 export interface Fork {
   id: string;
   forkerId: string;
@@ -157,6 +176,7 @@ export interface Fork {
   sourceType: PostType;
   resultId: string;
   resultType: PostType;
+  /** Required motivation text (CU-FK-01 — A1) */
   motivation: string;
   createdAt: Date;
 }
@@ -166,7 +186,8 @@ export interface ForkTreeNode {
   postId: string;
   postType: PostType;
   authorName: string;
-  discipline: Discipline;
+  /** Null if original was deleted (CU-FK-01 — A2) */
+  originalDeleted: boolean;
   children: ForkTreeNode[];
 }
 
@@ -214,20 +235,6 @@ export interface Notification {
 }
 
 // ============================================================
-// Recommendations Module (RC)
-// ============================================================
-
-export interface Recommendation {
-  id: string;
-  postId: string;
-  postType: PostType;
-  title: string;
-  authorName: string;
-  disciplines: Discipline[];
-  relevanceScore: number;
-}
-
-// ============================================================
 // Feed Module (FD)
 // ============================================================
 
@@ -239,7 +246,7 @@ export interface FeedItem {
 }
 
 export interface FeedFilters {
-  discipline?: Discipline;
+  category?: LiteraryCategory;
   postType?: PostType;
   tags?: string[];
   search?: string;
@@ -256,14 +263,6 @@ export interface PaginatedResponse<T> {
 // Shared / Common
 // ============================================================
 
-export interface Attachment {
-  id: string;
-  fileName: string;
-  fileUrl: string;
-  fileType: string;
-  fileSize: number;
-}
-
 export interface Reaction {
   id: string;
   userId: string;
@@ -273,78 +272,88 @@ export interface Reaction {
   createdAt: Date;
 }
 
-/** Predefined themed reaction emojis (RF-SP-03) */
+/**
+ * Predefined themed reaction emojis — writing-focused (CU-SP-02).
+ * Users select from these options; no free-form emoji entry.
+ */
 export const REACTION_EMOJIS = [
-  "🔥", // Fire — love it
-  "💡", // Lightbulb — great idea
-  "🎯", // Bullseye — on point
-  "🚀", // Rocket — impressive
-  "🌱", // Seedling — has potential
-  "🎨", // Palette — beautiful
-  "🎵", // Music — sounds great
-  "✍️", // Writing — well written
-  "🧩", // Puzzle — clever solution
-  "👏", // Clap — well done
+  "✍️", // Well written
+  "💡", // Great idea
+  "🔥", // Love it
+  "🌱", // Has potential
+  "🎯", // On point
+  "📖", // Good read
+  "🧩", // Clever
+  "👏", // Well done
 ] as const;
 
-/** Available disciplines with display metadata */
-export const DISCIPLINES: Record<
-  Discipline,
-  { label: string; labelEs: string; icon: string; color: string }
+/** Literary categories with display metadata */
+export const LITERARY_CATEGORIES: Record<
+  LiteraryCategory,
+  { label: string; labelEs: string; color: string }
 > = {
-  design: {
-    label: "Design",
-    labelEs: "Diseño",
-    icon: "🎨",
-    color: "var(--discipline-design)",
+  cuento: {
+    label: "Short Story",
+    labelEs: "Cuento",
+    color: "var(--category-cuento)",
   },
-  music: {
-    label: "Music",
-    labelEs: "Música",
-    icon: "🎵",
-    color: "var(--discipline-music)",
+  poesia: {
+    label: "Poetry",
+    labelEs: "Poesía",
+    color: "var(--category-poesia)",
   },
-  writing: {
-    label: "Writing",
-    labelEs: "Escritura",
-    icon: "✍️",
-    color: "var(--discipline-writing)",
+  novela: {
+    label: "Novel",
+    labelEs: "Novela",
+    color: "var(--category-novela)",
   },
-  development: {
-    label: "Development",
-    labelEs: "Desarrollo",
-    icon: "💻",
-    color: "var(--discipline-dev)",
-  },
-  other: {
-    label: "Other",
-    labelEs: "Otro",
-    icon: "✨",
-    color: "var(--discipline-other)",
+  ensayo: {
+    label: "Essay",
+    labelEs: "Ensayo",
+    color: "var(--category-ensayo)",
   },
 };
 
 /** Post type display metadata */
 export const POST_TYPES: Record<
   PostType,
-  { label: string; labelEs: string; icon: string; color: string }
+  { label: string; labelEs: string; color: string }
 > = {
   spark: {
     label: "Spark",
     labelEs: "Spark",
-    icon: "⚡",
     color: "var(--spark)",
   },
   wip: {
     label: "WIP",
     labelEs: "WIP",
-    icon: "🔧",
     color: "var(--wip)",
   },
   "post-mortem": {
     label: "Post-Mortem",
     labelEs: "Post-Mortem",
-    icon: "📝",
     color: "var(--postmortem)",
+  },
+};
+
+/** Creative state display metadata */
+export const CREATIVE_STATES: Record<
+  CreativeState,
+  { label: string; labelEs: string; color: string }
+> = {
+  flow: {
+    label: "Flow",
+    labelEs: "En flujo",
+    color: "var(--state-flow)",
+  },
+  "mild-block": {
+    label: "Mild Block",
+    labelEs: "Bloqueo Leve",
+    color: "var(--state-mild-block)",
+  },
+  "severe-block": {
+    label: "Severe Block",
+    labelEs: "Bloqueo Severo",
+    color: "var(--state-severe-block)",
   },
 };

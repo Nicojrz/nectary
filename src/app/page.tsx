@@ -1,8 +1,8 @@
 /**
  * Home Page (Landing / Root)
  *
- * Redirects authenticated users to /feed.
- * Shows a landing page for unauthenticated visitors.
+ * Página pública de bienvenida para escritores.
+ * Redirige a /feed si el usuario está autenticado.
  */
 import Link from "next/link";
 
@@ -16,8 +16,9 @@ export default function HomePage() {
           <span className="text-gradient-primary">Nectary</span>
         </h1>
         <p className="text-xl text-muted-foreground leading-relaxed max-w-lg mx-auto">
-          Share your creative sparks, document your process, and grow with a
-          community of designers, musicians, writers, and developers.
+          El espacio para escritores. Comparte chispazos, documenta tu proceso
+          y supera el bloqueo creativo junto a una comunidad que entiende lo
+          que escribir implica.
         </p>
 
         {/* Post type pills */}
@@ -39,29 +40,29 @@ export default function HomePage() {
             href="/register"
             className="inline-flex items-center justify-center px-8 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-lg hover:opacity-90 transition-opacity animate-pulse-glow"
           >
-            Join the Community
+            Únete a la comunidad
           </Link>
           <Link
             href="/login"
             className="inline-flex items-center justify-center px-8 py-3 rounded-xl border border-border text-foreground font-semibold text-lg hover:bg-muted transition-colors"
           >
-            Sign In
+            Iniciar sesión
           </Link>
         </div>
 
-        {/* Discipline badges */}
+        {/* Literary category badges */}
         <div className="flex flex-wrap justify-center gap-2 pt-6">
-          <span className="px-3 py-1 rounded-full text-xs font-medium bg-discipline-design/10 text-discipline-design">
-            Design
+          <span className="px-3 py-1 rounded-full text-xs font-medium bg-category-cuento/10 text-category-cuento">
+            Cuento
           </span>
-          <span className="px-3 py-1 rounded-full text-xs font-medium bg-discipline-music/10 text-discipline-music">
-            Music
+          <span className="px-3 py-1 rounded-full text-xs font-medium bg-category-poesia/10 text-category-poesia">
+            Poesía
           </span>
-          <span className="px-3 py-1 rounded-full text-xs font-medium bg-discipline-writing/10 text-discipline-writing">
-            Writing
+          <span className="px-3 py-1 rounded-full text-xs font-medium bg-category-novela/10 text-category-novela">
+            Novela
           </span>
-          <span className="px-3 py-1 rounded-full text-xs font-medium bg-discipline-dev/10 text-discipline-dev">
-            Development
+          <span className="px-3 py-1 rounded-full text-xs font-medium bg-category-ensayo/10 text-category-ensayo">
+            Ensayo
           </span>
         </div>
       </div>
