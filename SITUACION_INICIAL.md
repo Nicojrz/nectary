@@ -1,40 +1,96 @@
 # Situación Inicial del Proyecto Nectary
 
-Este documento explica el estado actual del proyecto (qué ya está hecho) y qué pasos debe seguir el equipo para empezar a trabajar **inmediatamente** sin bloqueos.
+Este documento explica el estado actual del proyecto y los pasos exactos que debe seguir cada miembro del equipo para trabajar desde el primer día.
 
 ---
 
 ## ¿Qué tenemos hasta ahora?
 
-El proyecto ya cuenta con todo el **scaffolding (andamiaje) inicial** para que las 5 personas del equipo trabajen en paralelo.
+### Infraestructura y configuración
+- **Next.js 16** con App Router y TypeScript configurado
+- **Tailwind CSS 4** con sistema de diseño completo (colores por categoría literaria, tokens, animaciones)
+- **Supabase** conectado — proyecto creado, credenciales en `.env.local`
+- **Esquema de base de datos ejecutado** en Supabase (`supabase/schema.sql`)
 
-1. **Estructura de Rutas (25+ páginas)**: Todas las páginas de la aplicación ya existen como "stubs" (plantillas vacías con títulos). Esto incluye las rutas públicas (Landing), las de autenticación (Login, Registro) y las protegidas (Feed, Creación de Sparks/WIPs, Perfil, etc.).
-2. **Endpoints de API (14+ rutas)**: Ya están creados los archivos `route.ts` básicos para el CRUD de todos los módulos.
-3. **Sistema de Diseño (Light Mode)**: Ya está configurado Tailwind CSS 4 en el archivo `src/app/globals.css` con la paleta de colores de la marca, los colores por disciplina y las utilidades compartidas (animaciones, glassmorphism).
-4. **Tipado Centralizado**: El archivo `src/types/index.ts` ya contiene todas las interfaces base de TypeScript para los usuarios, Sparks, WIPs y Post-Mortems.
-5. **Configuración de Supabase**: Los clientes de Supabase (browser y server) ya están configurados. 
-6. **Middleware Inteligente**: El `middleware.ts` está configurado para proteger rutas, pero actualmente tiene un *fallback* (plan de contingencia) que le permite funcionar aunque no exista una base de datos conectada.
+### Base de datos (ya creada en Supabase)
+Las siguientes tablas ya existen en tu proyecto de Supabase con RLS activo:
+
+| Tabla | Qué guarda |
+|-------|-----------|
+| `profiles` | Perfil del escritor (XP, nivel, estado creativo) |
+| `sparks` | Micro-posts de texto con soft delete y FTS |
+| `wips` | Proyectos en progreso con borrador y estados |
+| `wip_comments` | Comentarios de colaboradores |
+| `post_mortems` | Reflexiones estructuradas de 4 secciones |
+| `post_mortem_versions` | Historial inmutable de ediciones |
+| `forks` | Árbol de bifurcaciones con `ltree` |
+| `reactions` | Reacciones con emojis literarios predefinidos |
+| `xp_events` | Log inmutable de XP con idempotencia |
+| `xp_config` | Puntos por acción (configurable sin deploy) |
+| `badges` + `user_badges` | Medallas desbloqueables |
+| `notifications` | Notificaciones in-app |
+
+### Código del proyecto
+- **25+ rutas y páginas** scaffoldeadas con stubs y comentarios `TODO:`
+- **14 API endpoints** en `/api/` listos para implementar
+- **Tipos TypeScript** en `src/types/index.ts` alineados 1:1 con la BD
+- **Clientes Supabase** para servidor y cliente en `src/lib/supabase/`
+- **Middleware** con protección de rutas (activado al tener credenciales)
+- **Hook `useAuth`** para componentes cliente
 
 ---
 
-## ¿Cómo correr el proyecto AHORITA MISMO?
+## ¿Cómo correr el proyecto?
 
-Para facilitar el trabajo inicial de Maquetación y UI, el proyecto está configurado para correr **SIN NECESIDAD DE BASE DE DATOS NI VARIABLES DE ENTORNO**.
+```bash
+# 1. Clonar el repo
+git clone <url-del-repo>
+cd nectary
 
-Pasos exactos para tu equipo:
+# 2. Instalar dependencias
+npm install
 
-1. Clonar el repositorio.
-2. Instalar dependencias:
-   ```bash
-   npm install
-   ```
-3. Levantar el servidor:
-   ```bash
-   npm run dev
-   ```
+# 3. Configurar variables de entorno
+cp .env.example .env.local
+# Llenar con las credenciales de Supabase (Settings → Data API)
 
-### MUY IMPORTANTE: Sobre el archivo `.env`
-**NO configuren el archivo `.env.local` ni conecten Supabase todavía.** 
+# 4. Levantar servidor de desarrollo
+npm run dev
 
-El middleware está programado para detectar que no hay credenciales y saltarse la verificación de seguridad temporalmente. Esto les permitirá navegar por todas las páginas (incluso las protegidas como `/feed` o `/spark/new`) para poder construir y visualizar la Interfaz de Usuario (UI) sin que la base de datos sea un bloqueo.
+# 5. Abrir en el navegador
+# → http://localhost:3000
+```
 
+> Si tienes acceso al `.env.local` compartido por el equipo, omite el paso 3 y úsalo directamente.
+
+---
+
+## Estado de cada módulo
+
+| Módulo | Miembro | Estado | Siguiente paso |
+|--------|---------|--------|----------------|
+| Auth (GU) | M1 | Stub | Implementar formularios login/register con `supabase.auth` |
+| Sparks (SP) | M2 | Stub | Implementar creación + vista de detalle |
+| Feed (FD) | M2 | Stub | Conectar `/api/feed` con query a Supabase |
+| WIPs (WP) | M3 | Stub | Implementar CRUD + cambio de estado |
+| Post-Mortems (PM) | M3 | Stub | Implementar editor de 4 secciones |
+| Forking (FK) | M4 | Stub | Implementar modal de fork + árbol con `ltree` |
+| Reacciones | M4 | Stub | Conectar `/api/reactions` con optimistic UI |
+| Gamificación (KM) | M5 | Stub | Conectar XP events y vista materializada del leaderboard |
+| Perfil | M5 | Stub | Implementar vista de perfil con badges y posts |
+
+---
+
+## Cosas que YA NO son bloqueantes
+
+- La base de datos ya está creada y tiene RLS activo
+- Las credenciales de Supabase ya están configuradas
+- El middleware protege rutas automáticamente
+- Los tipos TypeScript ya están definidos para toda la BD
+
+## Cosas que TODAVÍA faltan
+
+- `tailwind-merge` por instalar (`npm install tailwind-merge`)
+- Componentes UI base: `Button`, `Input`, `Modal`, `Toast` — aún no existen en `components/ui/`
+- La vista materializada del leaderboard hay que refrescarla periódicamente. Se puede activar como **cron job** en Supabase (Database → Cron Jobs): `SELECT refresh_leaderboard();` cada hora.
+- Tests — ninguno por ahora, definir estrategia con el equipo

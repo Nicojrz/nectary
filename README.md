@@ -174,8 +174,11 @@ nectary/
 │   │
 │   └── middleware.ts                 # Next.js middleware (refresco de sesión)
 │
-├── public/                           # Assets estáticos
+├── supabase/
+│   └── schema.sql                    # Esquema completo de BD (tablas, RLS, triggers, FTS)
+├── public/                           # Static assets
 ├── .env.example                      # Plantilla de variables de entorno
+├── .env.local                        # Variables locales (NO commitear)
 ├── next.config.ts                    # Configuración de Next.js
 ├── tsconfig.json                     # Configuración de TypeScript
 ├── postcss.config.mjs                # PostCSS (Tailwind)
@@ -430,28 +433,37 @@ cp .env.example .env.local
 ## 🧠 Decisiones de Diseño Clave
 
 ### 1. Solo texto plano
-Los Sparks y WIPs aceptan **únicamente texto plano** (sin imágenes, audio ni código). Esto simplifica el modelo de datos y centra la experiencia en la escritura (CU-SP-01, CU-WP-01).
+Los Sparks y WIPs aceptan **únicamente texto plano**. Simplifica el modelo de datos y centra la experiencia en la escritura (CU-SP-01, CU-WP-01).
 
 ### 2. Categorías literarias en lugar de disciplinas
-Se eliminó el tipo `Discipline` (design/music/writing/dev). Ahora todo el sistema usa `LiteraryCategory`: `cuento`, `poesia`, `novela`, `ensayo`. Ver `src/types/index.ts`.
+Todo el sistema usa `LiteraryCategory`: `cuento`, `poesia`, `novela`, `ensayo`. Ver `src/types/index.ts` y el enum `literary_category` en `supabase/schema.sql`.
 
-### 3. Tablas separadas por tipo de post
-Los Sparks, WIPs y Post-Mortems usan **tablas separadas** en Supabase con relaciones polimórficas para reacciones y forks. Evita columnas nulas innecesarias.
+### 3. Soft deletes — integridad del árbol de forks
+Las tablas de contenido tienen `deleted_at TIMESTAMPTZ`. Al borrar un post el árbol de forks no se rompe — el nodo se muestra como `[Contenido eliminado]` (CU-FK-01 A2).
 
-### 4. Supabase como Todo en Uno
-Supabase cubre autenticación, base de datos, almacenamiento y realtime en un solo servicio, simplificando la arquitectura para un equipo estudiantil.
+### 4. Árbol de forks con `ltree`
+Se usa la extensión `ltree` de PostgreSQL para el campo `tree_path`. Permite consultar ancestros y descendientes en O(log n) con un índice GIST.
 
-### 5. Idempotencia de XP
-Cada evento de XP usa una clave compuesta (`action:actor:target`) para evitar doble premio. Ver `generateXPIdempotencyKey()` en `src/lib/utils.ts`.
+### 5. Búsqueda full-text en español
+Columnas `search_vector TSVECTOR` con la extensión `unaccent` para normalizar tildes. Los índices GIN permiten búsquedas rápidas por título, contenido y etiquetas.
 
-### 6. Árbol de Forks persistente (CU-FK-01 — A2)
-El árbol de forks usa *Materialized Paths*. Si el post original se elimina, el nodo muestra `[Contenido eliminado]` en lugar de un enlace roto.
+### 6. Historial de versiones de Post-Mortems
+La tabla `post_mortem_versions` guarda un snapshot automático (por trigger) antes de cada edición. El campo `version` es incremental e inmutable (CU-PM-01 A2).
 
-### 7. Feed adaptado al estado creativo (CU-FD-01)
-El estado del usuario (Flujo / Bloqueo Leve / Bloqueo Severo) adapta el contenido del feed: en "Bloqueo Severo" se priorizan Sparks cortos y Post-Mortems resueltos.
+### 7. XP tipado y configurable
+El enum `xp_action_type` evita strings mágicos. La tabla `xp_config` permite ajustar los puntos por acción sin necesidad de un nuevo deploy.
 
-### 8. Modal de sugerencia PM (CU-WP-03)
-Cuando un autor cambia su WIP a "Resuelto", el sistema despliega automáticamente un modal invitándolo a redactar un Post-Mortem.
+### 8. Idempotencia de XP
+Cada evento usa `idempotency_key TEXT UNIQUE` con formato `accion:actor:objetivo` para evitar doble premio.
+
+### 9. Leaderboard como vista materializada
+`MATERIALIZED VIEW leaderboard` cachea la consulta costosa del ranking. Se refresca con `SELECT refresh_leaderboard()` (puede programarse como cron job en Supabase).
+
+### 10. Feed adaptado al estado creativo (CU-FD-01)
+El estado del usuario (Flujo / Bloqueo Leve / Bloqueo Severo) adapta el contenido del feed. En "Bloqueo Severo" se priorizan Sparks y Post-Mortems resueltos.
+
+### 11. Modal de sugerencia PM (CU-WP-03)
+Cuando un autor cambia su WIP a "Resuelto", el sistema despliega un modal para crear un Post-Mortem. El estado `resolved` se valida también a nivel de BD.
 
 ---
 
