@@ -31,7 +31,7 @@ export type CreativeState = "flow" | "mild-block" | "severe-block";
 export type NotificationType =
   | "comment"
   | "fork"
-  | "reaction"
+  | "like"
   | "xp"
   | "badge"
   | "system";
@@ -79,7 +79,7 @@ export interface Spark {
   /** At least one category required to publish (CU-SP-01 — A3) */
   categories: LiteraryCategory[];
   tags: string[];
-  reactionCounts: Record<string, number>;
+  likes: number;
   forkCount: number;
   parentForkId: string | null;
   createdAt: Date;
@@ -106,7 +106,7 @@ export interface WIP {
   categories: LiteraryCategory[];
   tags: string[];
   commentCount: number;
-  reactionCounts: Record<string, number>;
+  likes: number;
   forkCount: number;
   parentForkId: string | null;
   /** Linked post-mortem once WIP is resolved (CU-WP-03) */
@@ -150,7 +150,7 @@ export interface PostMortem {
   tags: string[];
   /** Linked WIP origin (optional — CU-PM-01 A1) */
   wipOriginId: string | null;
-  reactionCounts: Record<string, number>;
+  likes: number;
   /** Counter for "Me desbloqueó" reactions (CU-PM-01) */
   unblockedCount: number;
   /** Version tracking for edit history (CU-PM-01 A2) */
@@ -263,29 +263,13 @@ export interface PaginatedResponse<T> {
 // Shared / Common
 // ============================================================
 
-export interface Reaction {
+export interface Like {
   id: string;
   userId: string;
   targetId: string;
   targetType: PostType;
-  emoji: string;
   createdAt: Date;
 }
-
-/**
- * Predefined themed reaction emojis — writing-focused (CU-SP-02).
- * Users select from these options; no free-form emoji entry.
- */
-export const REACTION_EMOJIS = [
-  "✍️", // Well written
-  "💡", // Great idea
-  "🔥", // Love it
-  "🌱", // Has potential
-  "🎯", // On point
-  "📖", // Good read
-  "🧩", // Clever
-  "👏", // Well done
-] as const;
 
 /** Literary categories with display metadata */
 export const LITERARY_CATEGORIES: Record<

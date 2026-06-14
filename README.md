@@ -63,7 +63,7 @@ Una plataforma exclusivamente para **escritores** donde se comparten **Sparks** 
 │  │  │ /sparks  │ │/wips │ │/post-mortems│ │ /feed  │  │  │
 │  │  └──────────┘ └──────┘ └─────────────┘ └────────┘  │  │
 │  │  ┌──────────┐ ┌────────────┐ ┌──────┐               │  │
-│  │  │ /forks   │ │ /reactions │ │ /xp  │               │  │
+│  │  │ /forks   │ │ /likes │ │ /xp  │               │  │
 │  │  └──────────┘ └────────────┘ └──────┘               │  │
 │  └─────────────────────────┬───────────────────────────┘  │
 │                             │                              │
@@ -84,7 +84,7 @@ Una plataforma exclusivamente para **escritores** donde se comparten **Sparks** 
 
 ### Patrones Clave
 - **Server Components por defecto** — la obtención de datos se hace en el servidor
-- **Client Components** únicamente para elementos interactivos (formularios, reacciones, filtros)
+- **Client Components** únicamente para elementos interactivos (formularios, Likes, filtros)
 - **API Route Handlers** para mutaciones y consultas complejas
 - **Supabase RLS** (Row Level Security) para autorización a nivel de base de datos
 - **Auth basado en cookies** mediante `@supabase/ssr` — funciona tanto en componentes de servidor como de cliente
@@ -136,7 +136,7 @@ nectary/
 │   │       ├── post-mortems/
 │   │       │   ├── route.ts          # GET (listar/buscar), POST
 │   │       │   └── [id]/route.ts     # GET, PATCH, DELETE
-│   │       ├── reactions/route.ts    # POST, DELETE
+│   │       ├── likes/route.ts    # POST, DELETE
 │   │       └── forks/route.ts        # GET (árbol), POST (forkear) — RN-13, RN-14
 │   │
 │   ├── components/                   # Componentes React
@@ -271,8 +271,8 @@ Todas las rutas de la API se encuentran en `/api/` y siguen las convenciones RES
 | `GET`    | `/api/post-mortems/[id]`        | PM     | Obtener post-mortem              |
 | `PATCH`  | `/api/post-mortems/[id]`        | PM     | Actualizar (versionado)          |
 | `DELETE` | `/api/post-mortems/[id]`        | PM     | Eliminar post-mortem             |
-| `POST`   | `/api/reactions`                | SP/WP/PM | Agregar reacción                |
-| `DELETE` | `/api/reactions`                | SP/WP/PM | Eliminar reacción               |
+| `POST`   | `/api/likes`                | SP/WP/PM | Agregar reacción                |
+| `DELETE` | `/api/likes`                | SP/WP/PM | Eliminar reacción               |
 | `GET`    | `/api/xp`                       | KM       | Obtener XP y nivel del usuario  |
 | `GET`    | `/api/leaderboard`              | KM       | Ranking de escritores por XP    |
 | `GET`    | `/api/forks`                    | FK       | Obtener árbol de forks — RN-13, RN-14 |
@@ -282,55 +282,46 @@ Todas las rutas de la API se encuentran en `/api/` y siguen las convenciones RES
 
 ## 🎨 Sistema de Diseño
 
-El sistema de diseño está definido en `src/app/globals.css` utilizando custom properties de CSS integradas en Tailwind vía `@theme`.
+El sistema de diseño está definido en `src/app/globals.css` y ha sido migrado de **Lovable**. Utiliza Tailwind 4 con colores nativos en `oklch`.
 
-### Tokens de Color
+### Tipografía
+- **UI (Sans)**: `Fira Sans`
+- **Contenido (Serif)**: `DM Serif Display`
 
-| Token                    | Uso                            | Color          |
-|--------------------------|--------------------------------|----------------|
-| `--primary`              | Marca principal, Botones (CTAs)| `#6d28d9`      |
-| `--accent`               | Color secundario/Acento        | `#f59e0b`      |
-| `--background`           | Fondo de página                | `#fafaf9`      |
-| `--card`                 | Superficies de tarjetas        | `#ffffff`      |
-| `--muted`                | Fondos apagados/suaves         | `#f5f5f4`      |
+### Tokens de Color Base (OKLCH)
+
+| Token                    | Uso                            |
+|--------------------------|--------------------------------|
+| `--background`           | Fondo de página principal      |
+| `--card`                 | Superficies de tarjetas (glass)|
+| `--primary`              | Marca principal, CTAs          |
+| `--accent`               | Acentos y highlights           |
 
 ### Colores por Categoría Literaria
 
-| Categoría | Variable CSS              | Color     |
-|-----------|---------------------------|-----------|
-| Cuento    | `--category-cuento`       | `#ec4899` |
-| Poesía    | `--category-poesia`       | `#8b5cf6` |
-| Novela    | `--category-novela`       | `#06b6d4` |
-| Ensayo    | `--category-ensayo`       | `#10b981` |
+| Categoría | Color     | Tono Suave    |
+|-----------|-----------|---------------|
+| Cuento    | `--cuento`| `--cuento-soft`|
+| Poesía    | `--poesia`| `--poesia-soft`|
+| Novela    | `--novela`| `--novela-soft`|
+| Ensayo    | `--ensayo`| `--ensayo-soft`|
 
 ### Colores por Tipo de Post
 
-| Tipo         | Variable CSS       | Color     |
-|-------------|-------------------|-----------|
-| Spark       | `--spark`         | `#f59e0b` |
-| WIP         | `--wip`           | `#3b82f6` |
-| Post-Mortem | `--postmortem`    | `#8b5cf6` |
+| Tipo         | Color          | Tono Suave          |
+|-------------|----------------|---------------------|
+| Spark       | `--spark`      | `--spark-soft`      |
+| WIP         | `--wip`        | `--wip-soft`        |
+| Post-Mortem | `--postmortem` | `--postmortem-soft` |
 
-### Uso en Tailwind
-
-```tsx
-// Usa los tokens directamente en las clases de Tailwind:
-<div className="bg-primary text-primary-foreground" />
-<span className="text-category-poesia" />
-<span className="text-category-cuento" />
-<article className="border-spark/50" />
-<p className="text-muted-foreground" />
-```
-
-### Clases Utilitarias Disponibles
+### Clases Utilitarias (Glassmorphism)
 
 | Clase                   | Descripción                              |
 |------------------------|------------------------------------------|
-| `.glass`               | Efecto glassmorphism (desenfoque + borde)|
-| `.text-gradient-primary`| Texto con gradiente (primario → acento) |
-| `.animate-fade-in`     | Aparecer y deslizar hacia arriba (0.3s) |
-| `.animate-slide-up`    | Deslizamiento de entrada (0.4s)         |
-| `.animate-pulse-glow`  | Resplandor pulsante circular (marca)    |
+| `.glass`               | Efecto glassmorphism base (blur 20px)    |
+| `.glass-strong`        | Efecto glass más intenso (blur 26px)     |
+| `.glass-panel`         | Panel con glass y sombra fuerte          |
+| `.scroll-slim`         | Scrollbar estilizado y delgado           |
 
 ---
 
@@ -345,7 +336,7 @@ El proyecto está dividido en **5 módulos** que pueden trabajarse en paralelo. 
 | **M1** | Auth + Middleware               | `(auth)/*`, `hooks/use-auth.ts`, `lib/supabase/*`                                    | 🔴 Alta  |
 | **M2** | Sparks (SP) + Feed (FD)         | `spark/*`, `feed/*`, `api/sparks/*`, `api/feed/*`, `components/feed/*`               | 🔴 Alta  |
 | **M3** | WIPs (WP) + Post-Mortems (PM)  | `wip/*`, `post-mortem/*`, `api/wips/*`, `api/post-mortems/*`, `components/versions/*`| 🔴 Alta  |
-| **M4** | Forking (FK) + Reacciones       | `api/forks/*`, `api/reactions/*`, `components/fork/*`                                | 🟡 Media |
+| **M4** | Forking (FK) + Likes       | `api/forks/*`, `api/likes/*`, `components/fork/*`                                | 🟡 Media |
 | **M5** | Gamificación (KM) + Perfil      | `leaderboard/*`, `profile/*`, `settings/*`, `api/xp/*`, `components/gamification/*` | 🟡 Media |
 
 ### Orden de Dependencias de los Módulos
@@ -354,7 +345,7 @@ El proyecto está dividido en **5 módulos** que pueden trabajarse en paralelo. 
 M1 (Auth) ──────────────────────┐
                                 │
 M2 (Sparks + Feed) ────────────┤
-                                ├──► M4 (Forking + Reacciones)
+                                ├──► M4 (Forking + Likes)
 M3 (WIPs + Post-Mortems) ──────┤
                                 │
                                 └──► M5 (Gamificación + Perfil)
@@ -387,7 +378,7 @@ main
 │   ├── feature/wip-crud            (M3)
 │   ├── feature/postmortem-crud     (M3)
 │   ├── feature/fork-system         (M4)
-│   ├── feature/reactions           (M4)
+│   ├── feature/likes           (M4)
 │   ├── feature/gamification-xp     (M5)
 │   └── feature/profile-leaderboard (M5)
 ```
@@ -469,5 +460,6 @@ Este proyecto tiene propósitos académicos y de portfolio.
 | Miembro 1 | [Nicolas Juarez] — Auth & Middleware      |
 | Miembro 2 | [Sebastian Jara] — Sparks & Feed          |
 | Miembro 3 | [Javier Reyna] — WIPs & Post-Mortems      |
-| Miembro 4 | [Jimena Camacho] — Forking & Reacciones   |
+| Miembro 4 | [Jimena Camacho] — Forking & Likes   |
 | Miembro 5 | [Dylan Martinez] — Gamificación & Perfil  |
+

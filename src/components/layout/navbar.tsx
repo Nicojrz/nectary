@@ -1,84 +1,60 @@
-/**
- * Navbar Component
- *
- * Main navigation bar shown on all authenticated pages.
- * Includes: Logo, nav links, creative state selector (RF-FD-03),
- * notification bell, and user menu.
- *
- * TODO: Connect to Supabase auth for user session.
- * TODO: Implement creative state selector.
- * TODO: Implement notification dropdown.
- */
-import Link from "next/link";
-import {
-  Flame,
-  Wrench,
-  BookOpen,
-  Trophy,
-  Plus,
-  Bell,
-  User,
-} from "lucide-react";
+"use client";
+import { useState } from "react";
+import type { CreativeState } from "@/types/nectary";
+import { Feather, Search, Plus, Bell } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export function Navbar() {
+interface NavbarProps {
+  creativeState: CreativeState;
+  onCreativeStateChange: (s: CreativeState) => void;
+  onCreate: () => void;
+}
+
+export function Navbar({ onCreate }: NavbarProps) {
+  const [query, setQuery] = useState("");
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
-      <nav className="container mx-auto max-w-5xl flex h-14 items-center justify-between px-4">
-        {/* Logo */}
-        <Link
-          href="/feed"
-          className="flex items-center gap-2 font-bold text-lg text-primary hover:opacity-80 transition-opacity"
+    <header className="sticky top-0 z-40 border-b border-card/60 glass">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
+        {/* logo */}
+        <a href="/" className="flex shrink-0 items-center gap-2">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-soft">
+            <Feather className="h-5 w-5" strokeWidth={2.4} />
+          </span>
+          <span className="hidden font-serif text-2xl text-foreground sm:block">
+            Nectary
+          </span>
+        </a>
+
+        {/* search */}
+        <div className="relative ml-auto hidden max-w-sm flex-1 md:block">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search sparks, writers, WIPs…"
+            className="h-10 w-full rounded-full border border-card/80 bg-card/55 pl-9 pr-4 text-sm text-foreground outline-none placeholder:text-muted-foreground backdrop-blur-xl transition-all focus:border-primary/30 focus:bg-card/80 focus:ring-2 focus:ring-ring/20"
+          />
+        </div>
+
+        <Button
+          variant="outline"
+          size="icon"
+          aria-label="Notifications"
+          className="ml-auto hidden rounded-full border-card/80 bg-card/55 text-muted-foreground backdrop-blur-xl md:ml-0 sm:inline-flex"
         >
+          <Bell className="h-5 w-5" />
+        </Button>
 
-          <span className="text-gradient-primary">Nectary</span>
-        </Link>
-
-        {/* Center nav links */}
-        <div className="hidden md:flex items-center gap-1">
-          <NavLink href="/feed" icon={<Flame className="w-4 h-4" />} label="Feed" />
-          <NavLink href="/spark/new" icon={<Plus className="w-4 h-4" />} label="Spark" />
-          <NavLink href="/wip/new" icon={<Wrench className="w-4 h-4" />} label="WIP" />
-          <NavLink href="/post-mortem/new" icon={<BookOpen className="w-4 h-4" />} label="Post-Mortem" />
-          <NavLink href="/leaderboard" icon={<Trophy className="w-4 h-4" />} label="Leaderboard" />
-        </div>
-
-        {/* Right: Creative state + Notifications + User */}
-        <div className="flex items-center gap-3">
-          {/* TODO: Creative State Selector — RF-FD-03 */}
-          <button
-            className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            aria-label="Notifications"
-          >
-            <Bell className="w-5 h-5" />
-          </button>
-          <button
-            className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            aria-label="User menu"
-          >
-            <User className="w-5 h-5" />
-          </button>
-        </div>
-      </nav>
+        <Button
+          onClick={onCreate}
+          className="h-10 rounded-full px-4 shadow-soft"
+        >
+          <Plus className="h-4 w-4" strokeWidth={2.6} />
+          <span className="hidden sm:inline">Escribir</span>
+        </Button>
+      </div>
     </header>
   );
 }
 
-function NavLink({
-  href,
-  icon,
-  label,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-1.5 px-3 py-2 text-sm text-muted-foreground hover:text-foreground rounded-md hover:bg-muted transition-colors"
-    >
-      {icon}
-      <span>{label}</span>
-    </Link>
-  );
-}

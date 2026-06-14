@@ -1,31 +1,32 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fira_Sans, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const firaSans = Fira_Sans({
+  variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const dmSerif = DM_Serif_Display({
+  variable: "--font-serif",
   subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "Nectary — Creative Community Platform",
+    default: "Nectary — A Community for Writers",
     template: "%s | Nectary",
   },
   description:
-    "Share Sparks, WIPs, and Post-Mortems. Fork ideas, earn XP, and grow with a creative community of designers, musicians, writers, and developers.",
+    "Nectary is an exclusive community for writers to share Sparks, document WIPs, and reflect through Post-Mortems — with idea forking and gamification.",
   keywords: [
     "creative community",
-    "design",
-    "music",
     "writing",
-    "development",
-    "portfolio",
+    "literature",
+    "stories",
     "collaboration",
   ],
 };
@@ -37,8 +38,8 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang="es"
+      className={`${firaSans.variable} ${dmSerif.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}

@@ -1,73 +1,27 @@
 @import "tailwindcss";
+@source "../";
+@import "tw-animate-css";
 
-/* ============================================================
-   NECTARY — Design System Tokens
-   ============================================================
-   This file defines the global design system for Nectary.
-   All color, spacing, and typography tokens are defined here
-   as CSS custom properties and exposed via Tailwind's @theme.
-   ============================================================ */
+@custom-variant dark (&:is(.dark *));
 
-/* --- Light Mode (default) --- */
-:root {
-  /* Surfaces */
-  --background: #fafaf9;
-  --foreground: #1c1917;
-  --card: #ffffff;
-  --card-foreground: #1c1917;
-  --popover: #ffffff;
-  --popover-foreground: #1c1917;
+/*
+ * Nectary design system.
+ * Monochromatic off-white base, deep purple brand, semantic literary
+ * category + post-type accents. Glassmorphism surfaces. Inter (UI) +
+ * Merriweather (post body serif). All colors in oklch.
+ */
 
-  /* Brand */
-  --primary: #6d28d9;
-  --primary-foreground: #faf5ff;
-  --secondary: #f5f3ff;
-  --secondary-foreground: #6d28d9;
-
-  /* Accents */
-  --accent: #f59e0b;
-  --accent-foreground: #451a03;
-  --muted: #f5f5f4;
-  --muted-foreground: #78716c;
-
-  /* Semantic */
-  --destructive: #ef4444;
-  --destructive-foreground: #fef2f2;
-  --success: #10b981;
-  --success-foreground: #ecfdf5;
-  --warning: #f59e0b;
-  --warning-foreground: #fffbeb;
-  --info: #3b82f6;
-  --info-foreground: #eff6ff;
-
-  /* Borders & Rings */
-  --border: #e7e5e4;
-  --input: #e7e5e4;
-  --ring: #6d28d9;
-
-  /* Radius */
-  --radius: 0.75rem;
-
-  /* Literary Category Colors — writing platform only */
-  --category-cuento: #ec4899;   /* Short story: pink/magenta */
-  --category-poesia: #8b5cf6;   /* Poetry: violet */
-  --category-novela: #06b6d4;   /* Novel: cyan */
-  --category-ensayo: #10b981;   /* Essay: green */
-
-  /* Post Type Colors */
-  --spark: #f59e0b;
-  --wip: #3b82f6;
-  --postmortem: #8b5cf6;
-
-  /* Creative State Colors */
-  --state-flow: #10b981;
-  --state-mild-block: #f59e0b;
-  --state-severe-block: #ef4444;
-}
-
-
-/* --- Tailwind Theme Mapping --- */
 @theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+
+  --font-sans: "Fira Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "DM Serif Display", ui-serif, Georgia, serif;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -78,120 +32,205 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
-  --color-info: var(--info);
-  --color-info-foreground: var(--info-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
 
-  /* Literary category colors */
-  --color-category-cuento: var(--category-cuento);
-  --color-category-poesia: var(--category-poesia);
-  --color-category-novela: var(--category-novela);
-  --color-category-ensayo: var(--category-ensayo);
+  /* Literary categories */
+  --color-cuento: var(--cuento);
+  --color-cuento-soft: var(--cuento-soft);
+  --color-poesia: var(--poesia);
+  --color-poesia-soft: var(--poesia-soft);
+  --color-novela: var(--novela);
+  --color-novela-soft: var(--novela-soft);
+  --color-ensayo: var(--ensayo);
+  --color-ensayo-soft: var(--ensayo-soft);
 
-  /* Post type colors */
+  /* Post types */
   --color-spark: var(--spark);
+  --color-spark-soft: var(--spark-soft);
   --color-wip: var(--wip);
+  --color-wip-soft: var(--wip-soft);
   --color-postmortem: var(--postmortem);
+  --color-postmortem-soft: var(--postmortem-soft);
 
-  /* Creative state colors */
-  --color-state-flow: var(--state-flow);
-  --color-state-mild-block: var(--state-mild-block);
-  --color-state-severe-block: var(--state-severe-block);
+  /* Status */
+  --color-flow: var(--flow);
+  --color-mild: var(--mild);
+  --color-severe: var(--severe);
 
-  /* Fonts */
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --shadow-soft: 0 2px 10px oklch(0.28 0.04 50 / 0.05);
+  --shadow-card: 0 18px 50px -34px oklch(0.28 0.04 50 / 0.22);
+  --shadow-lift: 0 24px 60px -34px oklch(0.4 0.1 45 / 0.3);
+  --shadow-glass: 0 16px 45px -28px oklch(0.28 0.04 50 / 0.26);
 
-  /* Radius */
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 4px);
-  --radius-xl: calc(var(--radius) + 8px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* --- Base Styles --- */
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+:root {
+  --radius: 0.875rem;
+
+  --background: oklch(0.968 0.018 78);
+  --foreground: oklch(0.27 0.018 48);
+  --card: oklch(0.995 0.008 80 / 0.78);
+  --card-foreground: oklch(0.27 0.018 48);
+  --popover: oklch(0.99 0.01 80);
+  --popover-foreground: oklch(0.27 0.018 48);
+
+  --primary: lab(43.2441% 37.9537 35.4448);
+  --primary-foreground: oklch(0.98 0.012 78);
+
+  --secondary: oklch(0.9 0.027 76);
+  --secondary-foreground: oklch(0.32 0.02 48);
+  --muted: oklch(0.91 0.022 76);
+  --muted-foreground: oklch(0.53 0.026 54);
+  --accent: oklch(0.9 0.04 135);
+  --accent-foreground: oklch(0.44 0.07 135);
+
+  --destructive: oklch(0.58 0.22 25);
+  --destructive-foreground: oklch(0.99 0.002 95);
+
+  --border: oklch(0.84 0.028 72);
+  --input: oklch(0.84 0.028 72);
+  --ring: oklch(0.52 0.13 37);
+
+  /* Literary categories */
+  --cuento: oklch(0.52 0.13 37);
+  --cuento-soft: oklch(0.92 0.04 45);
+  --poesia: oklch(0.45 0.07 135);
+  --poesia-soft: oklch(0.91 0.04 135);
+  --novela: oklch(0.48 0.08 215);
+  --novela-soft: oklch(0.92 0.035 215);
+  --ensayo: oklch(0.47 0.08 105);
+  --ensayo-soft: oklch(0.92 0.04 105);
+
+  /* Post types */
+  --spark: oklch(0.6 0.14 64);
+  --spark-soft: oklch(0.93 0.05 70);
+  --wip: oklch(0.45 0.07 135);
+  --wip-soft: oklch(0.91 0.04 135);
+  --postmortem: oklch(0.52 0.13 37);
+  --postmortem-soft: oklch(0.92 0.04 45);
+
+  /* Creative state */
+  --flow: oklch(0.7 0.15 165);
+  --mild: oklch(0.76 0.16 70);
+  --severe: oklch(0.58 0.22 25);
+
+  --sidebar: oklch(0.99 0.002 95);
+  --sidebar-foreground: oklch(0.23 0.02 285);
+  --sidebar-primary: oklch(0.48 0.22 290);
+  --sidebar-primary-foreground: oklch(0.99 0.002 95);
+  --sidebar-accent: oklch(0.95 0.02 290);
+  --sidebar-accent-foreground: oklch(0.48 0.22 290);
+  --sidebar-border: oklch(0.92 0.004 95);
+  --sidebar-ring: oklch(0.48 0.22 290);
 }
 
-/* --- Utility Classes --- */
-.glass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.dark {
+  --background: oklch(0.18 0.015 285);
+  --foreground: oklch(0.96 0.003 95);
+  --card: oklch(0.22 0.018 285);
+  --card-foreground: oklch(0.96 0.003 95);
+  --popover: oklch(0.22 0.018 285);
+  --popover-foreground: oklch(0.96 0.003 95);
+  --primary: oklch(0.6 0.21 290);
+  --primary-foreground: oklch(0.99 0.002 95);
+  --secondary: oklch(0.27 0.02 285);
+  --secondary-foreground: oklch(0.96 0.003 95);
+  --muted: oklch(0.27 0.02 285);
+  --muted-foreground: oklch(0.68 0.015 285);
+  --accent: oklch(0.3 0.04 290);
+  --accent-foreground: oklch(0.92 0.02 290);
+  --destructive: oklch(0.62 0.2 25);
+  --destructive-foreground: oklch(0.99 0.002 95);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.6 0.21 290);
+
+  --cuento-soft: oklch(0.35 0.1 1);
+  --poesia-soft: oklch(0.35 0.1 295);
+  --novela-soft: oklch(0.35 0.08 215);
+  --ensayo-soft: oklch(0.35 0.08 165);
+  --spark-soft: oklch(0.35 0.08 75);
+  --wip-soft: oklch(0.35 0.08 255);
+  --postmortem-soft: oklch(0.35 0.1 295);
+
+  --sidebar: oklch(0.2 0.018 285);
+  --sidebar-foreground: oklch(0.96 0.003 95);
+  --sidebar-primary: oklch(0.6 0.21 290);
+  --sidebar-primary-foreground: oklch(0.99 0.002 95);
+  --sidebar-accent: oklch(0.3 0.04 290);
+  --sidebar-accent-foreground: oklch(0.92 0.02 290);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.6 0.21 290);
 }
 
-.text-gradient-primary {
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    background-image:
+      radial-gradient(circle at 8% 0%, color-mix(in oklab, var(--accent) 35%, transparent), transparent 28rem),
+      radial-gradient(circle at 94% 8%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 30rem);
+    background-attachment: fixed;
+  }
 }
 
-/* --- Scrollbar Styling --- */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--muted-foreground);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--foreground);
+/* Frosted glass surface for navbars, modals, dropdowns */
+@utility glass {
+  background-color: color-mix(in oklab, var(--card) 72%, transparent);
+  backdrop-filter: blur(20px) saturate(135%);
+  border: 1px solid color-mix(in oklab, white 64%, transparent);
 }
 
-/* --- Focus Ring --- */
-*:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-  border-radius: var(--radius-sm);
+.dark .glass {
+  background-color: oklch(0.22 0.018 285 / 0.6);
+  border-color: oklch(1 0 0 / 0.08);
 }
 
-/* --- Animations --- */
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+@utility glass-strong {
+  background-color: color-mix(in oklab, var(--card) 86%, transparent);
+  backdrop-filter: blur(26px) saturate(140%);
+  border: 1px solid color-mix(in oklab, white 70%, transparent);
 }
 
-@keyframes slide-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+.dark .glass-strong {
+  background-color: oklch(0.22 0.018 285 / 0.8);
+  border-color: oklch(1 0 0 / 0.1);
 }
 
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(109, 40, 217, 0.4); }
-  50%      { box-shadow: 0 0 16px 4px rgba(109, 40, 217, 0.2); }
+@utility glass-panel {
+  background-color: color-mix(in oklab, var(--card) 62%, transparent);
+  backdrop-filter: blur(22px) saturate(135%);
+  border: 1px solid color-mix(in oklab, white 68%, transparent);
+  box-shadow: var(--shadow-glass);
 }
 
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out forwards;
-}
 
-.animate-slide-up {
-  animation: slide-up 0.4s ease-out forwards;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+/* Thin custom scrollbar for sidebars */
+@utility scroll-slim {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
 }
