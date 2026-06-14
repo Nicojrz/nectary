@@ -1,8 +1,6 @@
 # Nectary — Plataforma de Escritura Creativa
 
-Una plataforma exclusivamente para **escritores**. Los usuarios comparten "Sparks" (fragmentos e ideas en texto), documentan proyectos en curso mediante "WIPs" y reflexionan sobre bloqueos superados en "Post-Mortems". Cuenta con un sistema de *forking* para rastrear la evolución de ideas, gamificación con XP y recomendaciones adaptadas al estado creativo del escritor.
-
-(Se puede recortar a quienes esta dirigido, checar el documento de SITUACION_INICIAL.md)
+Una plataforma exclusivamente para **escritores** donde se comparten **Sparks** (chispazos e ideas en texto), se documentan proyectos en curso mediante **WIPs** y se reflexiona sobre bloqueos superados en **Post-Mortems**. Cuenta con un sistema de *forking* para rastrear la evolución de ideas, **gamificación con XP y medallas**, y retroalimentación contextual adaptada al estado creativo del escritor.
 
 
 ---
@@ -31,7 +29,7 @@ Una plataforma exclusivamente para **escritores**. Los usuarios comparten "Spark
 | **Lenguaje**      | TypeScript                 | Tipado seguro de extremo a extremo               |
 | **Estilos**       | Tailwind CSS 4             | CSS utilitario con tokens de diseño              |
 | **Íconos**        | Lucide React               | Librería de íconos consistente                   |
-| **Auth y BD**     | Supabase                   | PostgreSQL + Auth + Storage + Realtime           |
+| **Auth y BD**     | Supabase                   | PostgreSQL + Auth + Realtime                     |
 | **SDK Supabase**  | `@supabase/ssr`            | Soporte para componentes de Servidor y Cliente   |
 | **Despliegue**    | Vercel (recomendado)       | Optimizado para Next.js                          |
 
@@ -64,9 +62,9 @@ Una plataforma exclusivamente para **escritores**. Los usuarios comparten "Spark
 │  │  ┌──────────┐ ┌──────┐ ┌─────────────┐ ┌────────┐  │  │
 │  │  │ /sparks  │ │/wips │ │/post-mortems│ │ /feed  │  │  │
 │  │  └──────────┘ └──────┘ └─────────────┘ └────────┘  │  │
-│  │  ┌──────────┐ ┌──────┐ ┌─────────────────────────┐  │  │
-│  │  │ /forks   │ │/react│ │ /notifications          │  │  │
-│  │  └──────────┘ └──────┘ └─────────────────────────┘  │  │
+│  │  ┌──────────┐ ┌────────────┐ ┌──────┐               │  │
+│  │  │ /forks   │ │ /reactions │ │ /xp  │               │  │
+│  │  └──────────┘ └────────────┘ └──────┘               │  │
 │  └─────────────────────────┬───────────────────────────┘  │
 │                             │                              │
 │  ┌─────────────────────────▼───────────────────────────┐  │
@@ -77,10 +75,10 @@ Una plataforma exclusivamente para **escritores**. Los usuarios comparten "Spark
                            │
 ┌──────────────────────────▼───────────────────────────────┐
 │                    SUPABASE                               │
-│  ┌──────────────┐ ┌────────┐ ┌──────────┐ ┌──────────┐  │
-│  │ PostgreSQL   │ │  Auth  │ │ Storage  │ │ Realtime │  │
-│  │ (RLS + FTS)  │ │        │ │ (archivos) │ │ (notif.) │  │
-│  └──────────────┘ └────────┘ └──────────┘ └──────────┘  │
+│  ┌──────────────┐ ┌────────┐                              │
+│  │ PostgreSQL   │ │  Auth  │                              │
+│  │ (RLS + FTS)  │ │        │                              │
+│  └──────────────┘ └────────┘                              │
 └──────────────────────────────────────────────────────────┘
 ```
 
@@ -105,26 +103,25 @@ nectary/
 │   │   │
 │   │   ├── (auth)/                   # Grupo de rutas de Auth (sin navbar)
 │   │   │   ├── layout.tsx            # Layout de tarjeta centrada
-│   │   │   ├── login/page.tsx        # RF-GU-02, RF-GU-03
-│   │   │   ├── register/page.tsx     # RF-GU-01
-│   │   │   └── recovery/page.tsx     # RF-GU-06
+│   │   │   ├── login/page.tsx        # RN-01, RN-25
+│   │   │   └── register/page.tsx     # RN-01, RN-02
 │   │   │
 │   │   ├── (main)/                   # Grupo de rutas principal (con navbar)
 │   │   │   ├── layout.tsx            # Shell de aplicación con Navbar
-│   │   │   ├── feed/page.tsx         # RF-FD-01, RF-FD-02
+│   │   │   ├── feed/page.tsx         # CU-FD-01 — RN-06, RN-20
 │   │   │   ├── spark/
-│   │   │   │   ├── new/page.tsx      # RF-SP-01, RF-SP-02
-│   │   │   │   └── [id]/page.tsx     # RF-SP-04, RF-SP-05
+│   │   │   │   ├── new/page.tsx      # CU-SP-01 — RN-05, RN-08, RN-21, RN-22
+│   │   │   │   └── [id]/page.tsx     # CU-SP-02 — RN-06, RN-09
 │   │   │   ├── wip/
-│   │   │   │   ├── new/page.tsx      # RF-WP-01
-│   │   │   │   └── [id]/page.tsx     # RF-WP-02, RF-WP-03
+│   │   │   │   ├── new/page.tsx      # CU-WP-01 — RN-05, RN-08
+│   │   │   │   └── [id]/page.tsx     # CU-WP-02, CU-WP-03 — RN-09, RN-11, RN-16
 │   │   │   ├── post-mortem/
-│   │   │   │   ├── new/page.tsx      # RF-PM-01, RF-PM-02
-│   │   │   │   └── [id]/page.tsx     # RNF-PM-01 (SSG/ISR)
+│   │   │   │   ├── new/page.tsx      # CU-PM-01 — RN-05
+│   │   │   │   └── [id]/page.tsx     # CU-PM-01 (SSG/ISR) — RN-10
 │   │   │   ├── profile/
-│   │   │   │   └── [username]/page   # RF-GU-04, RF-KM-03
-│   │   │   ├── settings/page.tsx     # RF-GU-05
-│   │   │   └── leaderboard/page.tsx  # RF-KM-04
+│   │   │   │   └── [username]/page.tsx # RN-04
+│   │   │   ├── leaderboard/page.tsx  # Ranking de XP por categoría
+│   │   │   └── settings/page.tsx     # RN-04
 │   │   │
 │   │   └── api/                      # API Route Handlers
 │   │       ├── feed/route.ts         # Endpoint unificado del feed
@@ -140,8 +137,7 @@ nectary/
 │   │       │   ├── route.ts          # GET (listar/buscar), POST
 │   │       │   └── [id]/route.ts     # GET, PATCH, DELETE
 │   │       ├── reactions/route.ts    # POST, DELETE
-│   │       ├── forks/route.ts        # GET (árbol), POST (forkear)
-│   │       └── notifications/route.ts # GET, PATCH (marcar como leído)
+│   │       └── forks/route.ts        # GET (árbol), POST (forkear) — RN-13, RN-14
 │   │
 │   ├── components/                   # Componentes React
 │   │   ├── layout/
@@ -150,12 +146,14 @@ nectary/
 │   │   │   ├── spark-card.tsx        # Card para feed de Spark
 │   │   │   ├── wip-card.tsx          # Card para feed de WIP
 │   │   │   ├── post-mortem-card.tsx  # Card para feed de Post-Mortem
-│   │   │   └── feed-filters.tsx      # Filtros por disciplina/tipo/etiqueta
+│   │   │   └── feed-filters.tsx      # Filtros por categoría literaria — RN-20, RN-21
 │   │   ├── fork/
-│   │   │   └── fork-tree.tsx         # Visualización de árbol de forks
+│   │   │   └── fork-tree.tsx         # Árbol de trazabilidad de forks — RN-13, RN-14
+│   │   ├── versions/
+│   │   │   └── version-history.tsx   # Historial de versiones de un texto — RN-10
 │   │   ├── gamification/
-│   │   │   └── xp-badge.tsx          # Pantalla de XP y nivel
-│   │   ├── editors/                  # TODO: Editores enriquecidos por cada tipo de post
+│   │   │   └── xp-badge.tsx          # Badge de XP y nivel del escritor
+│   │   ├── editors/                  # TODO: Editores de texto plano por tipo de post
 │   │   └── ui/                       # TODO: Primitivas base de UI (Botón, Input, etc.)
 │   │
 │   ├── hooks/                        # Custom React Hooks
@@ -163,7 +161,7 @@ nectary/
 │   │   └── use-auth.ts              # Hook de auth para Supabase
 │   │
 │   ├── lib/                          # Librerías Compartidas
-│   │   ├── utils.ts                  # cn(), formatRelativeTime, cálculos de XP, etc.
+│   │   ├── utils.ts                  # cn(), formatRelativeTime, generateXPIdempotencyKey, etc.
 │   │   └── supabase/
 │   │       ├── client.ts             # Cliente navegador (Client Components)
 │   │       ├── server.ts             # Cliente servidor (Server Components, API Routes)
@@ -174,11 +172,8 @@ nectary/
 │   │
 │   └── middleware.ts                 # Next.js middleware (refresco de sesión)
 │
-├── supabase/
-│   └── schema.sql                    # Esquema completo de BD (tablas, RLS, triggers, FTS)
-├── public/                           # Static assets
+├── public/                           # Assets estáticos
 ├── .env.example                      # Plantilla de variables de entorno
-├── .env.local                        # Variables locales (NO commitear)
 ├── next.config.ts                    # Configuración de Next.js
 ├── tsconfig.json                     # Configuración de TypeScript
 ├── postcss.config.mjs                # PostCSS (Tailwind)
@@ -230,26 +225,25 @@ npm run dev
 ## 🗺 Rutas y Páginas
 
 ### Rutas Públicas (sin auth)
-| Ruta            | Descripción               | Requerimientos |
-|----------------|---------------------------|----------------|
-| `/`            | Landing page              | —              |
-| `/login`       | Formulario de inicio de sesión | RF-GU-02/03    |
-| `/register`    | Formulario de registro    | RF-GU-01       |
-| `/recovery`    | Recuperación de contraseña | RF-GU-06       |
-| `/spark/[id]`  | Vista pública de Spark    | RF-SP-04       |
-| `/post-mortem/[id]` | Vista pública Post-Mortem | RNF-PM-01      |
+| Ruta                 | Descripción                         | Reglas de Negocio |
+|---------------------|-------------------------------------|-------------------|
+| `/`                 | Landing page                        | —                 |
+| `/login`            | Formulario de inicio de sesión      | RN-01, RN-25      |
+| `/register`         | Formulario de registro              | RN-01, RN-02      |
+| `/spark/[id]`       | Vista pública de Spark              | RN-06             |
+| `/post-mortem/[id]` | Vista pública de Post-Mortem (SSG/ISR)| RN-06           |
 
 ### Rutas Protegidas (requieren auth)
-| Ruta                   | Descripción            | Requerimientos |
-|-----------------------|------------------------|----------------|
-| `/feed`               | Feed principal         | RF-FD-01/02    |
-| `/spark/new`          | Crear Spark            | RF-SP-01/02    |
-| `/wip/new`            | Crear WIP              | RF-WP-01       |
-| `/wip/[id]`           | Detalle de WIP + comentarios | RF-WP-02/03    |
-| `/post-mortem/new`    | Crear Post-Mortem      | RF-PM-01/02    |
-| `/profile/[username]` | Perfil de usuario      | RF-GU-04       |
-| `/settings`           | Editar perfil          | RF-GU-05       |
-| `/leaderboard`        | Tabla de clasificación XP | RF-KM-04       |
+| Ruta                   | Descripción                              | Reglas de Negocio          |
+|-----------------------|------------------------------------------|----------------------------|
+| `/feed`               | Feed principal filtrado por categoría    | RN-06, RN-20, RN-21        |
+| `/spark/new`          | Crear Spark                              | RN-05, RN-08, RN-21, RN-22 |
+| `/wip/new`            | Crear WIP                                | RN-05, RN-08               |
+| `/wip/[id]`           | Detalle de WIP + comentarios + versiones | RN-09, RN-11, RN-16        |
+| `/post-mortem/new`    | Crear Post-Mortem                        | RN-05                      |
+| `/profile/[username]` | Perfil de usuario + XP acumulado         | RN-04                      |
+| `/leaderboard`        | Ranking de escritores por XP y categoría | —                          |
+| `/settings`           | Editar perfil e intereses literarios     | RN-04                      |
 
 ---
 
@@ -277,12 +271,12 @@ Todas las rutas de la API se encuentran en `/api/` y siguen las convenciones RES
 | `GET`    | `/api/post-mortems/[id]`        | PM     | Obtener post-mortem              |
 | `PATCH`  | `/api/post-mortems/[id]`        | PM     | Actualizar (versionado)          |
 | `DELETE` | `/api/post-mortems/[id]`        | PM     | Eliminar post-mortem             |
-| `POST`   | `/api/reactions`                | SP/WP/PM| Agregar reacción                |
-| `DELETE` | `/api/reactions`                | SP/WP/PM| Eliminar reacción               |
-| `GET`    | `/api/forks`                    | FK     | Obtener árbol de forks           |
-| `POST`   | `/api/forks`                    | FK     | Hacer fork a un post             |
-| `GET`    | `/api/notifications`            | —      | Obtener notificaciones del usuario|
-| `PATCH`  | `/api/notifications`            | —      | Marcar notificaciones como leídas|
+| `POST`   | `/api/reactions`                | SP/WP/PM | Agregar reacción                |
+| `DELETE` | `/api/reactions`                | SP/WP/PM | Eliminar reacción               |
+| `GET`    | `/api/xp`                       | KM       | Obtener XP y nivel del usuario  |
+| `GET`    | `/api/leaderboard`              | KM       | Ranking de escritores por XP    |
+| `GET`    | `/api/forks`                    | FK       | Obtener árbol de forks — RN-13, RN-14 |
+| `POST`   | `/api/forks`                    | FK     | Hacer fork a un texto — RN-13, RN-15  |
 
 ---
 
@@ -300,15 +294,14 @@ El sistema de diseño está definido en `src/app/globals.css` utilizando custom 
 | `--card`                 | Superficies de tarjetas        | `#ffffff`      |
 | `--muted`                | Fondos apagados/suaves         | `#f5f5f4`      |
 
-### Colores de Disciplinas
+### Colores por Categoría Literaria
 
-| Disciplina    | Variable CSS               | Color     |
-|--------------|----------------------------|-----------|
-| Diseño       | `--discipline-design`      | `#ec4899` |
-| Música       | `--discipline-music`       | `#8b5cf6` |
-| Escritura    | `--discipline-writing`     | `#06b6d4` |
-| Desarrollo   | `--discipline-dev`         | `#10b981` |
-| Otros        | `--discipline-other`       | `#f59e0b` |
+| Categoría | Variable CSS              | Color     |
+|-----------|---------------------------|-----------|
+| Cuento    | `--category-cuento`       | `#ec4899` |
+| Poesía    | `--category-poesia`       | `#8b5cf6` |
+| Novela    | `--category-novela`       | `#06b6d4` |
+| Ensayo    | `--category-ensayo`       | `#10b981` |
 
 ### Colores por Tipo de Post
 
@@ -323,6 +316,7 @@ El sistema de diseño está definido en `src/app/globals.css` utilizando custom 
 ```tsx
 // Usa los tokens directamente en las clases de Tailwind:
 <div className="bg-primary text-primary-foreground" />
+<span className="text-category-poesia" />
 <span className="text-category-cuento" />
 <article className="border-spark/50" />
 <p className="text-muted-foreground" />
@@ -346,13 +340,13 @@ El proyecto está dividido en **5 módulos** que pueden trabajarse en paralelo. 
 
 ### Distribución Sugerida
 
-| Miembro | Módulo(s)                      | Archivos Clave                                                                                    | Prioridad |
-|--------|-------------------------------|---------------------------------------------------------------------------------------------------|-----------|
-| **M1** | Auth (GU) + Middleware        | `(auth)/*`, `hooks/use-auth.ts`, `lib/supabase/*`                                                | 🔴 Alta   |
-| **M2** | Sparks (SP) + Feed (FD)       | `spark/*`, `feed/*`, `api/sparks/*`, `api/feed/*`, `components/feed/*`                           | 🔴 Alta   |
-| **M3** | WIPs (WP) + Post-Mortems (PM) | `wip/*`, `post-mortem/*`, `api/wips/*`, `api/post-mortems/*`                                     | 🔴 Alta   |
-| **M4** | Forking (FK) + Reacciones     | `api/forks/*`, `api/reactions/*`, `components/fork/*`                                            | 🟡 Media  |
-| **M5** | Gamificación (KM) + Perfil    | `leaderboard/*`, `profile/*`, `settings/*`, `components/gamification/*`                          | 🟡 Media  |
+| Miembro | Módulo(s)                       | Archivos Clave                                                                        | Prioridad |
+|--------|---------------------------------|---------------------------------------------------------------------------------------|----------|
+| **M1** | Auth + Middleware               | `(auth)/*`, `hooks/use-auth.ts`, `lib/supabase/*`                                    | 🔴 Alta  |
+| **M2** | Sparks (SP) + Feed (FD)         | `spark/*`, `feed/*`, `api/sparks/*`, `api/feed/*`, `components/feed/*`               | 🔴 Alta  |
+| **M3** | WIPs (WP) + Post-Mortems (PM)  | `wip/*`, `post-mortem/*`, `api/wips/*`, `api/post-mortems/*`, `components/versions/*`| 🔴 Alta  |
+| **M4** | Forking (FK) + Reacciones       | `api/forks/*`, `api/reactions/*`, `components/fork/*`                                | 🟡 Media |
+| **M5** | Gamificación (KM) + Perfil      | `leaderboard/*`, `profile/*`, `settings/*`, `api/xp/*`, `components/gamification/*` | 🟡 Media |
 
 ### Orden de Dependencias de los Módulos
 
@@ -363,18 +357,18 @@ M2 (Sparks + Feed) ────────────┤
                                 ├──► M4 (Forking + Reacciones)
 M3 (WIPs + Post-Mortems) ──────┤
                                 │
-                                └──► M5 (Gamification + Perfil)
+                                └──► M5 (Gamificación + Perfil)
 ```
 
 > **⚠️ M1 (Auth) debe completarse primero** — el resto de módulos dependen de la autenticación de usuarios. M2 y M3 pueden desarrollarse en paralelo. M4 y M5 dependen de que M2 y M3 tengan CRUDs básicos.
 
 ### Trazabilidad de Requerimientos
 
-Cada página y ruta de la API incluye comentarios con los IDs de requerimiento que implementan (por ejemplo, `RF-SP-01`, `RNF-PM-01`). Puedes buscar estos IDs en el código:
+Cada página y ruta de la API incluye comentarios con los IDs de regla de negocio que implementan (por ejemplo, `RN-09`, `RN-16`). Puedes buscar estos IDs en el código:
 
 ```bash
-# Encontrar todos los archivos relacionados a un requerimiento
-grep -r "RF-SP-01" src/
+# Encontrar todos los archivos relacionados a una regla de negocio
+grep -r "RN-09" src/
 ```
 
 ---
@@ -395,14 +389,15 @@ main
 │   ├── feature/fork-system         (M4)
 │   ├── feature/reactions           (M4)
 │   ├── feature/gamification-xp     (M5)
-│   └── feature/profile-page       (M5)
+│   └── feature/profile-leaderboard (M5)
 ```
 
 ### Convenciones
 
 - **Commits**: Utilizar [Conventional Commits](https://www.conventionalcommits.org/)
-  - `feat(sparks): add spark creation form — CU-SP-01`
-  - `fix(auth): resolve JWT refresh issue — CU-GU-02`
+  - `feat(sparks): add spark creation form — RN-05, RN-08`
+  - `feat(wips): enforce version immutability — RN-12`
+  - `fix(auth): implement writer/reviewer roles — RN-02`
 - **Componentes**: Archivos en PascalCase, un componente por archivo
 - **API Routes**: Usar la convención `route.ts`, siempre validar inputs
 - **Tipos**: Definir en `src/types/index.ts`, importar con `@/types`
@@ -432,38 +427,32 @@ cp .env.example .env.local
 
 ## 🧠 Decisiones de Diseño Clave
 
-### 1. Solo texto plano
-Los Sparks y WIPs aceptan **únicamente texto plano**. Simplifica el modelo de datos y centra la experiencia en la escritura (CU-SP-01, CU-WP-01).
+### 1. Solo texto plano (L-04, L-06)
+Todas las publicaciones (Sparks, WIPs, Post-Mortems) aceptan **únicamente texto plano**. No hay editor enriquecido ni carga de imágenes o archivos. Simplifica el modelo de datos y centra la experiencia en el contenido literario.
 
-### 2. Categorías literarias en lugar de disciplinas
-Todo el sistema usa `LiteraryCategory`: `cuento`, `poesia`, `novela`, `ensayo`. Ver `src/types/index.ts` y el enum `literary_category` en `supabase/schema.sql`.
+### 2. Categorías literarias predefinidas (RN-21, RN-22)
+El sistema usa cuatro categorías fijas: `cuento`, `poesia`, `novela`, `ensayo`. Cada texto pertenece a exactamente una categoría. Ver `src/types/index.ts`.
 
-### 3. Soft deletes — integridad del árbol de forks
-Las tablas de contenido tienen `deleted_at TIMESTAMPTZ`. Al borrar un post el árbol de forks no se rompe — el nodo se muestra como `[Contenido eliminado]` (CU-FK-01 A2).
+### 3. Versionado lineal de textos (RN-09 a RN-12)
+Cada edición de un texto publicado genera automáticamente una nueva versión inmutable. Las versiones antiguas son de solo lectura (`RN-12`). Los comentarios se almacenan con referencia a la `version_id` específica (`RN-11`).
 
-### 4. Árbol de forks con `ltree`
-Se usa la extensión `ltree` de PostgreSQL para el campo `tree_path`. Permite consultar ancestros y descendientes en O(log n) con un índice GIST.
+### 4. Árbol de forks con Materialized Paths (RN-13, RN-14)
+El sistema de forking usa *Materialized Paths* en la base de datos. Permite consultar ancestros y descendientes de forma eficiente. Si el texto original es eliminado, el árbol muestra `[Contenido eliminado]` sin romper la cadena de trazabilidad (`RN-13`).
 
-### 5. Búsqueda full-text en español
-Columnas `search_vector TSVECTOR` con la extensión `unaccent` para normalizar tildes. Los índices GIN permiten búsquedas rápidas por título, contenido y etiquetas.
+### 5. Filtro por categoría literaria sin algoritmo complejo (RN-20, L-05)
+El feed no usa algoritmos de recomendación complejos. Filtra exclusivamente por las categorías de interés del usuario, complementado por el estado creativo declarado para ajustar la prioridad del contenido mostrado.
 
-### 6. Historial de versiones de Post-Mortems
-La tabla `post_mortem_versions` guarda un snapshot automático (por trigger) antes de cada edición. El campo `version` es incremental e inmutable (CU-PM-01 A2).
+### 6. Autenticación por cookies con `@supabase/ssr` (RN-25)
+En lugar de manejar tokens JWT manualmente en LocalStorage, se usa el paquete SSR de Supabase que gestiona sesiones con Cookies. Garantiza compatibilidad con React Server Components y que toda acción requiera autenticación.
 
-### 7. XP tipado y configurable
-El enum `xp_action_type` evita strings mágicos. La tabla `xp_config` permite ajustar los puntos por acción sin necesidad de un nuevo deploy.
+### 7. Modal de sugerencia de Post-Mortem (CU-WP-03)
+Cuando un autor cambia su WIP a "Resuelto", el sistema despliega automáticamente un modal invitando a redactar un Post-Mortem. El cambio de estado se valida a nivel de base de datos.
 
-### 8. Idempotencia de XP
-Cada evento usa `idempotency_key TEXT UNIQUE` con formato `accion:actor:objetivo` para evitar doble premio.
+### 8. Gamificación con XP e idempotencia
+Cada acción del escritor (publicar, comentar, hacer fork, resolver un WIP) otorga puntos de experiencia (XP). La función `generateXPIdempotencyKey()` en `src/lib/utils.ts` genera una clave única con formato `accion:actor:objetivo` que evita otorgar XP duplicado por la misma acción.
 
 ### 9. Leaderboard como vista materializada
-`MATERIALIZED VIEW leaderboard` cachea la consulta costosa del ranking. Se refresca con `SELECT refresh_leaderboard()` (puede programarse como cron job en Supabase).
-
-### 10. Feed adaptado al estado creativo (CU-FD-01)
-El estado del usuario (Flujo / Bloqueo Leve / Bloqueo Severo) adapta el contenido del feed. En "Bloqueo Severo" se priorizan Sparks y Post-Mortems resueltos.
-
-### 11. Modal de sugerencia PM (CU-WP-03)
-Cuando un autor cambia su WIP a "Resuelto", el sistema despliega un modal para crear un Post-Mortem. El estado `resolved` se valida también a nivel de BD.
+La tabla de clasificación usa una `MATERIALIZED VIEW` en Supabase que cachea el ranking por XP total y por categoría literaria. Se refresca periódicamente sin afectar el rendimiento de las consultas del feed.
 
 ---
 
@@ -477,8 +466,8 @@ Este proyecto tiene propósitos académicos y de portfolio.
 
 | Rol | Nombre |
 |------|------|
-| Miembro 1 | [Nicolas Juarez] — Auth & Middleware |
-| Miembro 2 | [Sebastian Jara] — Sparks & Feed |
-| Miembro 3 | [Javier Reyna] — WIPs & Post-Mortems |
-| Miembro 4 | [Jimena Camacho] — Forking & Reacciones |
-| Miembro 5 | [Dylan Martinez] — Gamificación & Perfil |
+| Miembro 1 | [Nicolas Juarez] — Auth & Middleware      |
+| Miembro 2 | [Sebastian Jara] — Sparks & Feed          |
+| Miembro 3 | [Javier Reyna] — WIPs & Post-Mortems      |
+| Miembro 4 | [Jimena Camacho] — Forking & Reacciones   |
+| Miembro 5 | [Dylan Martinez] — Gamificación & Perfil  |
