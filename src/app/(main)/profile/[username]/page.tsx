@@ -10,10 +10,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import type { CreativeState } from "@/types/nectary";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-type CreativeState = "flowing" | "mild_block" | "severe_block";
 
 type Profile = {
   id: string;
@@ -49,7 +48,7 @@ const MOCK_PROFILE: Profile = {
   bio: "Escritor de ciencia ficción y ensayo. Apasionado por los mundos que aún no existen y las ideas que todavía no tienen nombre.",
   level: 7,
   xp_total: 680,
-  creative_state: "flowing",
+  creative_state: "flow",
 };
 
 const MOCK_BADGES: Badge[] = [
@@ -120,17 +119,17 @@ const CREATIVE_STATE_MAP: Record<
   CreativeState,
   { label: string; color: string; dot: string }
 > = {
-  flowing: {
+  flow: {
     label: "En flujo",
     color: "text-emerald-400",
     dot: "bg-emerald-400",
   },
-  mild_block: {
+  mild: {
     label: "Bloqueo leve",
     color: "text-amber-400",
     dot: "bg-amber-400",
   },
-  severe_block: {
+  severe: {
     label: "Bloqueo severo",
     color: "text-rose-400",
     dot: "bg-rose-400",
