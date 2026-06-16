@@ -6,6 +6,7 @@
 
 //import { createClient } from "@/lib/supabase/server";
 import Image from "next/image";
+import { Trophy, Medal, Zap, Feather, BookOpen, HeartCrack } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,20 +27,20 @@ type LeaderboardEntry = {
 function RankBadge({ rank }: { rank: number }) {
   if (rank === 1)
     return (
-      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-400/20 text-lg font-black text-yellow-400">
-        🥇
+      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-400/20 text-yellow-400">
+        <Medal className="h-5 w-5" />
       </span>
     );
   if (rank === 2)
     return (
-      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-400/20 text-lg font-black text-zinc-300">
-        🥈
+      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-400/20 text-zinc-300">
+        <Medal className="h-5 w-5" />
       </span>
     );
   if (rank === 3)
     return (
-      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-700/20 text-lg font-black text-amber-600">
-        🥉
+      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-700/20 text-amber-600">
+        <Medal className="h-5 w-5" />
       </span>
     );
 
@@ -80,7 +81,7 @@ function Avatar({ name, avatarUrl }: { name: string | null; avatarUrl: string | 
 function LevelPill({ level }: { level: number }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-      <span className="text-[10px]">⚡</span>
+      <Zap className="h-3 w-3" />
       Nv. {level}
     </span>
   );
@@ -91,7 +92,7 @@ function StatChip({
   count,
   label,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   count: number;
   label: string;
 }) {
@@ -100,7 +101,7 @@ function StatChip({
       title={label}
       className="inline-flex items-center gap-1 rounded-md bg-white/5 px-2 py-1 text-xs text-muted-foreground"
     >
-      <span>{icon}</span>
+      <span className="text-muted-foreground">{icon}</span>
       <span className="font-medium text-foreground">{count}</span>
     </span>
   );
@@ -136,9 +137,9 @@ function TopCard({ entry }: { entry: LeaderboardEntry }) {
       </div>
 
       <div className="hidden items-center gap-1.5 sm:flex">
-        <StatChip icon="✦" count={entry.spark_count} label="Sparks" />
-        <StatChip icon="🔧" count={entry.wip_count} label="WIPs" />
-        <StatChip icon="📋" count={entry.pm_count} label="Post-Mortems" />
+        <StatChip icon={<Feather className="h-3.5 w-3.5" />} count={entry.spark_count} label="Sparks" />
+        <StatChip icon={<BookOpen className="h-3.5 w-3.5" />} count={entry.wip_count} label="WIPs" />
+        <StatChip icon={<HeartCrack className="h-3.5 w-3.5" />} count={entry.pm_count} label="Post-Mortems" />
       </div>
     </div>
   );
@@ -192,10 +193,10 @@ function TableRow({ entry }: { entry: LeaderboardEntry }) {
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-white/10 py-20 text-center">
-      <span className="text-4xl">🏆</span>
+    <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-white/10 py-20 text-center text-muted-foreground">
+      <Trophy className="h-10 w-10" />
       <p className="font-semibold text-foreground">Aún no hay escritores en el ranking</p>
-      <p className="max-w-xs text-sm text-muted-foreground">
+      <p className="max-w-xs text-sm">
         Publica tu primer Spark o WIP para aparecer aquí.
       </p>
     </div>
@@ -329,9 +330,9 @@ export default async function LeaderboardPage() {
                       <th className="py-3 pl-4 pr-2 text-center">#</th>
                       <th className="py-3 px-3">Escritor</th>
                       <th className="py-3 px-3 text-right">XP</th>
-                      <th className="hidden py-3 px-3 text-center sm:table-cell">✦ Sparks</th>
-                      <th className="hidden py-3 px-3 text-center md:table-cell">🔧 WIPs</th>
-                      <th className="hidden py-3 px-3 text-center lg:table-cell">📋 PMs</th>
+                      <th className="hidden py-3 px-3 text-center sm:table-cell"><Feather className="inline h-3.5 w-3.5 mb-0.5" /> Sparks</th>
+                      <th className="hidden py-3 px-3 text-center md:table-cell"><BookOpen className="inline h-3.5 w-3.5 mb-0.5" /> WIPs</th>
+                      <th className="hidden py-3 px-3 text-center lg:table-cell"><HeartCrack className="inline h-3.5 w-3.5 mb-0.5" /> PMs</th>
                     </tr>
                   </thead>
                   <tbody>

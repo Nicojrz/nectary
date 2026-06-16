@@ -11,6 +11,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { CreativeState } from "@/types/nectary";
+import { Feather, BookOpen, HeartCrack, Unlock, Zap, Pen, Bell, Lock } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,7 +58,7 @@ const MOCK_BADGES: Badge[] = [
     key: "first_spark",
     label: "Primera Chispa",
     description: "Publicaste tu primer Spark.",
-    icon: "✦",
+    icon: "feather",
     unlocked_at: "2025-01-10T12:00:00Z",
   },
   {
@@ -65,7 +66,7 @@ const MOCK_BADGES: Badge[] = [
     key: "first_wip",
     label: "En Construcción",
     description: "Creaste tu primer WIP.",
-    icon: "🔧",
+    icon: "book-open",
     unlocked_at: "2025-01-15T09:30:00Z",
   },
   {
@@ -73,7 +74,7 @@ const MOCK_BADGES: Badge[] = [
     key: "first_pm",
     label: "Post-Mortem",
     description: "Escribiste tu primer Post-Mortem.",
-    icon: "📋",
+    icon: "heart-crack",
     unlocked_at: "2025-02-03T18:00:00Z",
   },
   {
@@ -81,7 +82,7 @@ const MOCK_BADGES: Badge[] = [
     key: "unblocker",
     label: "Desbloqueador",
     description: "Superaste un bloqueo creativo severo.",
-    icon: "🔓",
+    icon: "unlock",
     unlocked_at: "2025-02-20T11:00:00Z",
   },
   {
@@ -89,7 +90,7 @@ const MOCK_BADGES: Badge[] = [
     key: "level_5",
     label: "Nivel 5",
     description: "Alcanzaste el nivel 5.",
-    icon: "⚡",
+    icon: "zap",
     unlocked_at: "2025-03-01T08:00:00Z",
   },
 ];
@@ -238,11 +239,11 @@ function ProfileHeader({
               href="/settings"
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition hover:bg-primary/90 active:scale-95"
             >
-              ✏️ Editar perfil
+              <Pen className="h-4 w-4" /> Editar perfil
             </Link>
           ) : (
             <button className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-white/10 active:scale-95">
-              🔔 Seguir
+              <Bell className="h-4 w-4" /> Seguir
             </button>
           )}
         </div>
@@ -262,7 +263,7 @@ function XPCard({ profile }: { profile: Profile }) {
       {/* Header row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-xl">⚡</span>
+          <Zap className="h-5 w-5 text-amber-500" />
           <h2 className="font-bold text-foreground">Experiencia</h2>
         </div>
         <div className="text-right">
@@ -305,7 +306,7 @@ function XPCard({ profile }: { profile: Profile }) {
 // Stats grid ──────────────────────────────────────────────────────────────────
 
 type StatItem = {
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   value: number;
   color: string;
@@ -314,7 +315,7 @@ type StatItem = {
 function StatCard({ icon, label, value, color }: StatItem) {
   return (
     <div className="glass flex flex-col items-center gap-1.5 rounded-2xl p-5 text-center">
-      <span className="text-2xl">{icon}</span>
+      <div className="text-2xl text-muted-foreground">{icon}</div>
       <span className={`text-2xl font-black ${color}`}>
         {value}
       </span>
@@ -326,19 +327,19 @@ function StatCard({ icon, label, value, color }: StatItem) {
 function StatsGrid({ stats }: { stats: Stats }) {
   const items: StatItem[] = [
     {
-      icon: "✦",
+      icon: <Feather className="h-6 w-6" />,
       label: "Sparks",
       value: stats.spark_count,
       color: "text-[var(--spark,#f59e0b)]",
     },
     {
-      icon: "🔧",
+      icon: <BookOpen className="h-6 w-6" />,
       label: "WIPs",
       value: stats.wip_count,
       color: "text-[var(--wip,#3b82f6)]",
     },
     {
-      icon: "📋",
+      icon: <HeartCrack className="h-6 w-6" />,
       label: "Post-Mortems",
       value: stats.pm_count,
       color: "text-[var(--postmortem,#8b5cf6)]",
@@ -359,6 +360,17 @@ function StatsGrid({ stats }: { stats: Stats }) {
   );
 }
 
+function renderBadgeIcon(iconName: string) {
+  switch (iconName) {
+    case "feather": return <Feather className="h-6 w-6" />;
+    case "book-open": return <BookOpen className="h-6 w-6" />;
+    case "heart-crack": return <HeartCrack className="h-6 w-6" />;
+    case "unlock": return <Unlock className="h-6 w-6" />;
+    case "zap": return <Zap className="h-6 w-6" />;
+    default: return <Feather className="h-6 w-6" />;
+  }
+}
+
 // Badge gallery ───────────────────────────────────────────────────────────────
 
 function BadgeCard({ badge }: { badge: Badge }) {
@@ -373,7 +385,9 @@ function BadgeCard({ badge }: { badge: Badge }) {
       title={badge.description}
       className="glass group flex flex-col items-center gap-2 rounded-2xl p-4 text-center transition hover:-translate-y-0.5 hover:ring-1 hover:ring-primary/30"
     >
-      <span className="text-3xl">{badge.icon}</span>
+      <div className="flex h-8 w-8 items-center justify-center text-primary">
+        {renderBadgeIcon(badge.icon)}
+      </div>
       <p className="text-sm font-semibold text-foreground leading-tight">
         {badge.label}
       </p>
@@ -390,7 +404,9 @@ function BadgeCard({ badge }: { badge: Badge }) {
 function LockedBadge() {
   return (
     <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-white/10 p-4 text-center opacity-30">
-      <span className="text-3xl">🔒</span>
+      <div className="flex h-8 w-8 items-center justify-center text-muted-foreground">
+        <Lock className="h-6 w-6" />
+      </div>
       <p className="text-xs text-muted-foreground">Bloqueada</p>
     </div>
   );

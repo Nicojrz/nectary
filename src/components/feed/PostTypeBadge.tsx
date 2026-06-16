@@ -1,11 +1,11 @@
 import { cn } from "@/lib/utils";
 import { POST_TYPES, type PostType } from "@/types/nectary";
 import { POST_TYPE_STYLES } from "@/lib/nectary-styles";
-import { Sparkles, Hammer, HeartCrack } from "lucide-react";
+import { Feather, BookOpen, HeartCrack } from "lucide-react";
 
 const ICONS = {
-  spark: Sparkles,
-  wip: Hammer,
+  spark: Feather,
+  wip: BookOpen,
   postmortem: HeartCrack,
 } as const;
 
