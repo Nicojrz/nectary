@@ -1,18 +1,228 @@
-/**
- * Register Page — RF-GU-01
- *
- * TODO: Implement registration form with email confirmation.
- * Assigned to: [TEAM MEMBER]
- */
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Feather, Loader2, Mail } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+
+const formSchema = z
+  .object({
+    name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
+    email: z.string().email("Correo electrónico inválido"),
+    password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  });
+
+type FormValues = z.infer<typeof formSchema>;
+
 export default function RegisterPage() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const onSubmit = async (values: FormValues) => {
+    setIsLoading(true);
+    const supabase = createClient();
+
+    const { error } = await supabase.auth.signUp({
+      email: values.email,
+      password: values.password,
+      options: {
+        data: {
+          name: values.name,
+        },
+      },
+    });
+
+    setIsLoading(false);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    setIsSuccess(true);
+  };
+
+  if (isSuccess) {
+    return (
+      <div className="flex flex-col items-center gap-8">
+        <Link href="/" className="flex flex-col items-center gap-3">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-soft">
+            <Feather className="h-6 w-6" strokeWidth={2.4} />
+          </span>
+          <span className="font-serif text-2xl text-foreground">Nectary</span>
+        </Link>
+
+        <div className="w-full rounded-[2rem] border border-card/80 p-8 shadow-lift glass-strong text-center flex flex-col items-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary mb-6">
+            <Mail className="h-8 w-8" />
+          </div>
+          <h1 className="font-serif text-3xl font-medium tracking-tight text-foreground mb-3">
+            Revisa tu correo
+          </h1>
+          <p className="text-muted-foreground mb-8">
+            Hemos enviado un enlace de confirmación a <strong className="text-foreground">{form.getValues("email")}</strong>.
+            Haz clic en el enlace para activar tu cuenta y comenzar a escribir.
+          </p>
+          <Button asChild className="w-full rounded-full h-11 shadow-soft">
+            <Link href="/login">Volver al inicio de sesión</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-center">
-        Join Nectary
-      </h1>
-      <p className="text-muted-foreground text-center">
-        TODO: Registration form — RF-GU-01, RF-GU-03
-      </p>
+    <div className="flex flex-col items-center gap-8">
+      <Link href="/" className="flex flex-col items-center gap-3">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-soft">
+          <Feather className="h-6 w-6" strokeWidth={2.4} />
+        </span>
+        <span className="font-serif text-2xl text-foreground">Nectary</span>
+      </Link>
+
+      <div className="w-full rounded-[2rem] border border-card/80 p-8 shadow-lift glass-strong">
+        <div className="mb-8 text-center">
+          <h1 className="font-serif text-3xl font-medium tracking-tight text-foreground">
+            Únete a Nectary
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Crea tu cuenta y empieza a escribir
+          </p>
+        </div>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-foreground/80">Nombre o seudónimo</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Ana Salvatierra"
+                      className="rounded-xl border-card/80 bg-card/40 focus:bg-card/80 transition-colors"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-foreground/80">Correo electrónico</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="tucorreo@ejemplo.com"
+                      type="email"
+                      className="rounded-xl border-card/80 bg-card/40 focus:bg-card/80 transition-colors"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-foreground/80">Contraseña</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="••••••••"
+                      type="password"
+                      className="rounded-xl border-card/80 bg-card/40 focus:bg-card/80 transition-colors"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-foreground/80">Confirmar contraseña</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="••••••••"
+                      type="password"
+                      className="rounded-xl border-card/80 bg-card/40 focus:bg-card/80 transition-colors"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="pt-2">
+              <Button
+                type="submit"
+                className="w-full rounded-full h-11 shadow-soft"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creando cuenta...
+                  </>
+                ) : (
+                  "Crear cuenta"
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          ¿Ya tienes cuenta?{" "}
+          <Link href="/login" className="font-medium text-primary hover:underline">
+            Inicia sesión
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

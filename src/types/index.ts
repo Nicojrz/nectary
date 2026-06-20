@@ -25,7 +25,7 @@ export type LiteraryCategory = "cuento" | "poesia" | "novela" | "ensayo";
 export type WIPStatus = "blocked" | "in-progress" | "resolved";
 
 /** Creative state of a user (CU-FD-01) */
-export type CreativeState = "flow" | "mild-block" | "severe-block";
+export type CreativeState = "flow" | "mild" | "severe";
 
 /** Notification types */
 export type NotificationType =
@@ -328,16 +328,16 @@ export const CREATIVE_STATES: Record<
   flow: {
     label: "Flow",
     labelEs: "En flujo",
-    color: "var(--state-flow)",
+    color: "var(--flow)",
   },
-  "mild-block": {
+  mild: {
     label: "Mild Block",
     labelEs: "Bloqueo Leve",
-    color: "var(--state-mild-block)",
+    color: "var(--mild)",
   },
-  "severe-block": {
+  severe: {
     label: "Severe Block",
     labelEs: "Bloqueo Severo",
-    color: "var(--state-severe-block)",
+    color: "var(--severe)",
   },
 };

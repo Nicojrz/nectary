@@ -38,7 +38,31 @@ export async function updateSession(request: NextRequest) {
   });
 
   // Refresh session — important for Server Components
-  await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || 
+                      request.nextUrl.pathname.startsWith('/register') || 
+                      request.nextUrl.pathname.startsWith('/recovery');
+                      
+  const isProtectedRoute = request.nextUrl.pathname.startsWith('/feed') || 
+                           request.nextUrl.pathname.startsWith('/spark/new') || 
+                           request.nextUrl.pathname.startsWith('/wip') || 
+                           request.nextUrl.pathname.startsWith('/post-mortem/new') || 
+                           request.nextUrl.pathname.startsWith('/profile') || 
+                           request.nextUrl.pathname.startsWith('/leaderboard') || 
+                           request.nextUrl.pathname.startsWith('/settings');
+
+  if (!user && isProtectedRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/login';
+    return NextResponse.redirect(url);
+  }
+
+  if (user && isAuthRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/feed';
+    return NextResponse.redirect(url);
+  }
 
   return supabaseResponse;
 }
