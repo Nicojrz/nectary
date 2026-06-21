@@ -1,34 +1,54 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { FeedFilters } from "@/components/feed/FeedFilters";
 import { FeedLayout } from "@/components/feed/FeedLayout";
 import { ProfilePanel } from "@/components/profile/ProfilePanel";
 import { ForkPanel } from "@/components/fork/ForkPanel";
-import { FEED_POSTS } from "@/lib/nectary-data";
 import type {
   CreativeState,
   FeedPost,
   LiteraryCategory,
   PostType,
 } from "@/types/nectary";
-import { Flame, PenLine } from "lucide-react";
+import { Flame, Loader2, PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function FeedPage() {
   const [creativeState, setCreativeState] = useState<CreativeState>("flow");
   const [category, setCategory] = useState<LiteraryCategory | "all">("all");
   const [postType, setPostType] = useState<PostType | "all">("all");
+  
+  const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const posts = useMemo(
-    () =>
-      FEED_POSTS.filter(
-        (p) =>
-          (category === "all" || p.category === category) &&
-          (postType === "all" || p.type === postType),
-      ),
-    [category, postType],
-  );
+  useEffect(() => {
+    let isMounted = true;
+    const fetchPosts = async () => {
+      setIsLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (category !== "all") params.set("category", category);
+        if (postType !== "all") params.set("type", postType);
+        
+        const res = await fetch(`/api/feed?${params.toString()}`);
+        if (!res.ok) throw new Error("Error fetching feed");
+        const data = await res.json();
+        
+        if (isMounted) {
+          setPosts(data.items || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch feed:", error);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    fetchPosts();
+    return () => { isMounted = false; };
+  }, [category, postType]);
 
   const handleFork = (post: FeedPost) => {
     // TODO: implement fork
@@ -78,17 +98,36 @@ export default function FeedPage() {
         />
 
         <div className="mb-6 grid grid-cols-2 gap-3">
-          <Button variant="outline" onClick={() => console.log("wip")} className="h-auto justify-start rounded-2xl border-card/80 bg-card/55 px-4 py-3 text-left backdrop-blur-xl">
+          <Button 
+            variant="outline" 
+            onClick={() => window.dispatchEvent(new CustomEvent('open-compose', { detail: 'wip' }))} 
+            className="h-auto justify-start rounded-2xl border-card/80 bg-card/55 px-4 py-3 text-left backdrop-blur-xl hover:border-wip/30"
+          >
             <PenLine className="h-4 w-4 text-wip" />
             <span><span className="block text-sm font-semibold text-foreground">Escribir un WIP</span><span className="block text-[11px] font-normal text-muted-foreground">Manuscrito y progreso</span></span>
           </Button>
-          <Button variant="outline" onClick={() => console.log("postmortem")} className="h-auto justify-start rounded-2xl border-card/80 bg-card/55 px-4 py-3 text-left backdrop-blur-xl">
+          <Button 
+            variant="outline" 
+            onClick={() => window.dispatchEvent(new CustomEvent('open-compose', { detail: 'postmortem' }))} 
+            className="h-auto justify-start rounded-2xl border-card/80 bg-card/55 px-4 py-3 text-left backdrop-blur-xl hover:border-postmortem/30"
+          >
             <PenLine className="h-4 w-4 text-postmortem" />
             <span><span className="block text-sm font-semibold text-foreground">Crear Post-Mortem</span><span className="block text-[11px] font-normal text-muted-foreground">Reflexiona sin prisa</span></span>
           </Button>
         </div>
 
-        <FeedLayout posts={posts} onFork={handleFork} />
+        {isLoading ? (
+          <div className="flex h-40 items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="flex h-40 flex-col items-center justify-center rounded-2xl border border-dashed border-card/80 text-center">
+            <p className="font-serif text-lg text-foreground">No hay publicaciones</p>
+            <p className="text-sm text-muted-foreground">Sé el primero en compartir algo.</p>
+          </div>
+        ) : (
+          <FeedLayout posts={posts} onFork={handleFork} />
+        )}
       </section>
 
       {/* right rail — gamification */}

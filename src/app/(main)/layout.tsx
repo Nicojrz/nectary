@@ -10,7 +10,7 @@
  *
  * All child routes require authentication (RNF-GU-02).
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/navbar";
 import { CreateModal } from "@/components/shared/CreateModal";
 import type { PostType } from "@/types/nectary";
@@ -27,6 +27,15 @@ export default function MainLayout({
     setCreateType(type);
     setCreateOpen(true);
   };
+
+  useEffect(() => {
+    const handleOpen = (e: Event) => {
+      const customEvent = e as CustomEvent<PostType>;
+      openWriter(customEvent.detail || "spark");
+    };
+    window.addEventListener("open-compose", handleOpen);
+    return () => window.removeEventListener("open-compose", handleOpen);
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

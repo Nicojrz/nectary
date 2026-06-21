@@ -59,12 +59,19 @@ export default function SettingsPage() {
 
   // Pre-fill form when user data is loaded
   useEffect(() => {
-    if (user && user.user_metadata) {
-      form.reset({
-        name: user.user_metadata.name || "",
-        bio: user.user_metadata.bio || "",
-        categories: user.user_metadata.categories || [],
-      });
+    if (user) {
+      const fetchProfile = async () => {
+        const supabase = createClient();
+        const { data } = await supabase.from('profiles').select('name, bio, categories').eq('id', user.id).single();
+        if (data) {
+          form.reset({
+            name: data.name || user.user_metadata?.name || "",
+            bio: data.bio || user.user_metadata?.bio || "",
+            categories: data.categories || user.user_metadata?.categories || [],
+          });
+        }
+      };
+      fetchProfile();
     }
   }, [user, form]);
 
@@ -72,7 +79,14 @@ export default function SettingsPage() {
     setIsSaving(true);
     const supabase = createClient();
 
-    const { error } = await supabase.auth.updateUser({
+    // Actualizamos tanto la tabla profiles como la metadata de Auth (para redundancia)
+    const { error: profileError } = await supabase.from('profiles').update({
+      name: values.name,
+      bio: values.bio,
+      categories: values.categories,
+    }).eq('id', user?.id);
+
+    const { error: authError } = await supabase.auth.updateUser({
       data: {
         name: values.name,
         bio: values.bio,
@@ -82,8 +96,8 @@ export default function SettingsPage() {
 
     setIsSaving(false);
 
-    if (error) {
-      toast.error(error.message);
+    if (profileError || authError) {
+      toast.error(profileError?.message || authError?.message);
       return;
     }
 
