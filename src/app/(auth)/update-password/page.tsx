@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Feather, Loader2 } from "lucide-react";
+import { Feather, Loader2, KeyRound } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,22 +22,35 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-const formSchema = z.object({
-  email: z.string().email("Correo electrónico inválido"),
-  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
-});
+const formSchema = z
+  .object({
+    password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  });
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function LoginPage() {
+export default function UpdatePasswordPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+
+  // If user is not authenticated and auth has loaded, redirect to login
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/login");
+    }
+  }, [user, authLoading, router]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
@@ -44,27 +58,28 @@ export default function LoginPage() {
     setIsLoading(true);
     const supabase = createClient();
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: values.email,
+    const { error } = await supabase.auth.updateUser({
       password: values.password,
     });
 
     setIsLoading(false);
 
     if (error) {
-      if (error.message === "Invalid login credentials") {
-        form.setError("email", { message: "Correo o contraseña incorrectos" });
-        form.setError("password", { message: "Correo o contraseña incorrectos" });
-      } else {
-        toast.error(error.message);
-      }
+      toast.error(error.message);
       return;
     }
 
-    toast.success("Sesión iniciada correctamente");
+    toast.success("Contraseña actualizada exitosamente");
     router.push("/feed");
-    router.refresh();
   };
+
+  if (authLoading || !user) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center gap-8">
@@ -76,12 +91,15 @@ export default function LoginPage() {
       </Link>
 
       <div className="w-full rounded-[2rem] border border-card/80 p-8 shadow-lift glass-strong">
-        <div className="mb-8 text-center">
-          <h1 className="font-serif text-3xl font-medium tracking-tight text-foreground">
-            Bienvenido de vuelta
+        <div className="mb-8 text-center flex flex-col items-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary mb-6">
+            <KeyRound className="h-8 w-8" />
+          </div>
+          <h1 className="font-serif text-3xl font-medium tracking-tight text-foreground mb-2">
+            Nueva contraseña
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Inicia sesión para seguir escribiendo
+          <p className="text-sm text-muted-foreground">
+            Escribe tu nueva contraseña a continuación.
           </p>
         </div>
 
@@ -89,14 +107,14 @@ export default function LoginPage() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             <FormField
               control={form.control}
-              name="email"
+              name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-foreground/80">Correo electrónico</FormLabel>
+                  <FormLabel className="text-foreground/80">Nueva contraseña</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="tucorreo@ejemplo.com"
-                      type="email"
+                      placeholder="••••••••"
+                      type="password"
                       className="rounded-xl border-card/80 bg-card/40 focus:bg-card/80 transition-colors"
                       {...field}
                     />
@@ -108,18 +126,10 @@ export default function LoginPage() {
 
             <FormField
               control={form.control}
-              name="password"
+              name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <div className="flex items-center justify-between">
-                    <FormLabel className="text-foreground/80">Contraseña</FormLabel>
-                    <Link
-                      href="/recovery"
-                      className="text-xs text-primary hover:underline"
-                    >
-                      ¿Olvidaste tu contraseña?
-                    </Link>
-                  </div>
+                  <FormLabel className="text-foreground/80">Confirmar nueva contraseña</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="••••••••"
@@ -141,21 +151,14 @@ export default function LoginPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Iniciando sesión...
+                  Actualizando...
                 </>
               ) : (
-                "Iniciar sesión"
+                "Guardar y entrar"
               )}
             </Button>
           </form>
         </Form>
-
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          ¿No tienes cuenta?{" "}
-          <Link href="/register" className="font-medium text-primary hover:underline">
-            Regístrate
-          </Link>
-        </p>
       </div>
     </div>
   );

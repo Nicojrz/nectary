@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { AVATAR_TINTS } from "@/lib/nectary-styles";
 import type { Author } from "@/types/nectary";
@@ -12,10 +13,10 @@ interface AuthorChipProps {
 export function AuthorChip({ author, timestamp, size = "md", className }: AuthorChipProps) {
   const avatarSize = size === "sm" ? "h-7 w-7 text-[11px]" : "h-9 w-9 text-xs";
   return (
-    <div className={cn("flex items-center gap-2.5", className)}>
+    <Link href={`/profile/${author.handle}`} className={cn("group flex items-center gap-2.5 transition-opacity hover:opacity-80", className)}>
       <div
         className={cn(
-          "flex shrink-0 items-center justify-center rounded-full font-bold",
+          "flex shrink-0 items-center justify-center rounded-full font-bold transition-transform group-hover:scale-105",
           avatarSize,
           AVATAR_TINTS[author.tint] ?? AVATAR_TINTS.primary,
         )}
@@ -24,14 +25,14 @@ export function AuthorChip({ author, timestamp, size = "md", className }: Author
       </div>
       <div className="min-w-0 leading-tight">
         <div className="flex items-center gap-1.5">
-          <span className="truncate text-sm font-semibold text-foreground">{author.name}</span>
+          <span className="truncate text-sm font-semibold text-foreground group-hover:underline">{author.name}</span>
         </div>
         <div className="truncate text-xs text-muted-foreground">
           @{author.handle}
           {timestamp && <span className="text-muted-foreground/70"> · {timestamp}</span>}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 

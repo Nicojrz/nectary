@@ -42,7 +42,7 @@ export default function RecoveryPage() {
     const supabase = createClient();
 
     const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-      redirectTo: `${window.location.origin}/settings`,
+      redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
     });
 
     setIsLoading(false);

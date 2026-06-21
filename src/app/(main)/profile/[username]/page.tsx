@@ -312,39 +312,43 @@ type StatItem = {
   label: string;
   value: number;
   color: string;
+  href: string;
 };
 
-function StatCard({ icon, label, value, color }: StatItem) {
+function StatCard({ icon, label, value, color, href }: StatItem) {
   return (
-    <div className="glass flex flex-col items-center gap-1.5 rounded-2xl p-5 text-center">
-      <div className="text-2xl text-muted-foreground">{icon}</div>
-      <span className={`text-2xl font-black ${color}`}>
+    <Link href={href} className="glass group flex flex-col items-center gap-1.5 rounded-2xl p-5 text-center transition hover:-translate-y-0.5 hover:ring-1 hover:ring-primary/30">
+      <div className="text-2xl text-muted-foreground transition group-hover:scale-110 group-hover:text-foreground">{icon}</div>
+      <span className={`text-2xl font-black transition group-hover:scale-105 ${color}`}>
         {value}
       </span>
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
-    </div>
+      <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">{label}</span>
+    </Link>
   );
 }
 
-function StatsGrid({ stats }: { stats: Stats }) {
+function StatsGrid({ stats, username }: { stats: Stats; username: string }) {
   const items: StatItem[] = [
     {
       icon: <Feather className="h-6 w-6" />,
       label: "Sparks",
       value: stats.spark_count,
       color: "text-[var(--spark,#f59e0b)]",
+      href: `/profile/${username}/sparks`,
     },
     {
       icon: <BookOpen className="h-6 w-6" />,
       label: "WIPs",
       value: stats.wip_count,
       color: "text-[var(--wip,#3b82f6)]",
+      href: `/profile/${username}/wips`,
     },
     {
       icon: <HeartCrack className="h-6 w-6" />,
       label: "Post-Mortems",
       value: stats.pm_count,
       color: "text-[var(--postmortem,#8b5cf6)]",
+      href: `/profile/${username}/post-mortems`,
     },
   ];
 
@@ -487,7 +491,7 @@ export default async function ProfilePage({
     <div className="mx-auto max-w-2xl space-y-6 px-4 py-8">
       <ProfileHeader profile={profile} isOwnProfile={isOwnProfile} />
       <XPCard profile={profile} />
-      <StatsGrid stats={stats} />
+      <StatsGrid stats={stats} username={username} />
       <BadgeGallery badges={badges} />
     </div>
   );
