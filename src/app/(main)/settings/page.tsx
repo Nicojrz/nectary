@@ -79,16 +79,30 @@ export default function SettingsPage() {
     setIsSaving(true);
     const supabase = createClient();
 
-    // Actualizamos tanto la tabla profiles como la metadata de Auth (para redundancia)
+    // 1. Verificar si el nombre está ocupado por otro usuario
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('id, name')
+      .ilike('name', values.name.trim());
+
+    const isTaken = existing && existing.some((p) => p.id !== user?.id);
+    if (isTaken) {
+      toast.error("Este nombre ya está en uso por otro escritor.");
+      form.setError("name", { message: "Nombre no disponible" });
+      setIsSaving(false);
+      return;
+    }
+
+    // 2. Actualizamos tanto la tabla profiles como la metadata de Auth (para redundancia)
     const { error: profileError } = await supabase.from('profiles').update({
-      name: values.name,
+      name: values.name.trim(),
       bio: values.bio,
       categories: values.categories,
     }).eq('id', user?.id);
 
     const { error: authError } = await supabase.auth.updateUser({
       data: {
-        name: values.name,
+        name: values.name.trim(),
         bio: values.bio,
         categories: values.categories,
       },

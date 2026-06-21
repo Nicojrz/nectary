@@ -52,12 +52,26 @@ export default function RegisterPage() {
     setIsLoading(true);
     const supabase = createClient();
 
+    // 1. Verificación rápida de disponibilidad de nombre (UX)
+    const { data: existing } = await supabase
+      .from("profiles")
+      .select("name")
+      .ilike("name", values.name.trim());
+
+    if (existing && existing.length > 0) {
+      toast.error("Este nombre ya está registrado, elige otro distinto.");
+      form.setError("name", { message: "Nombre no disponible" });
+      setIsLoading(false);
+      return;
+    }
+
+    // 2. Crear usuario
     const { error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
         data: {
-          name: values.name,
+          name: values.name.trim(),
         },
       },
     });
@@ -65,7 +79,13 @@ export default function RegisterPage() {
     setIsLoading(false);
 
     if (error) {
-      toast.error(error.message);
+      if (error.message.toLowerCase().includes("already registered") || error.status === 400 || error.code === "user_already_exists") {
+        form.setError("email", { message: "Este correo electrónico ya está en uso." });
+      } else if (error.message.includes("over_email_send_rate_limit") || error.message.includes("rate_limit")) {
+        form.setError("email", { message: "Límite de intentos. Usa otro correo temporalmente o espera 1 hora." });
+      } else {
+        toast.error(error.message);
+      }
       return;
     }
 

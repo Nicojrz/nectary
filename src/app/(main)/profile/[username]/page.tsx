@@ -10,6 +10,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import type { CreativeState } from "@/types/nectary";
 import { Feather, BookOpen, HeartCrack, Unlock, Zap, Pen, Bell, Lock } from "lucide-react";
 
@@ -445,36 +447,41 @@ function BadgeGallery({ badges }: { badges: Badge[] }) {
 export default async function ProfilePage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ username: string }>;
 }) {
-  // Destructure params — required in Next.js 16 App Router
-  const { id } = await params;
+  const { username } = await params;
+  const supabase = await createClient();
 
-  // TODO (when Supabase keys are ready): replace with real queries
-  // const supabase = await createClient();
-  // const { data: profile } = await supabase
-  //   .from("profiles")
-  //   .select("id, name, avatar_url, level, xp_total")
-  //   .eq("id", id)
-  //   .single();
-  // const { data: userBadges } = await supabase
-  //   .from("user_badges")
-  //   .select("unlocked_at, badges(id, key, label, description, icon)")
-  //   .eq("user_id", id);
-  // const { data: stats } = await supabase
-  //   .from("leaderboard")
-  //   .select("spark_count, wip_count, pm_count")
-  //   .eq("id", id)
-  //   .single();
-  // const { data: session } = await supabase.auth.getUser();
-  // const isOwnProfile = session?.user?.id === id;
+  // 1. Fetch profile by handle
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("handle", username)
+    .single();
 
-  void id; // remove this once Supabase queries above are active
+  if (!profile) {
+    notFound();
+  }
 
-  const profile = MOCK_PROFILE;
-  const badges = MOCK_BADGES;
-  const stats = MOCK_STATS;
-  const isOwnProfile = IS_OWN_PROFILE;
+  // 2. Auth session to check ownership
+  const { data: sessionData } = await supabase.auth.getUser();
+  const isOwnProfile = sessionData?.user?.id === profile.id;
+
+  // 3. Fetch exact counts for stats
+  const [sparksRes, wipsRes, pmsRes] = await Promise.all([
+    supabase.from('sparks').select('id', { count: 'exact', head: true }).eq('author_id', profile.id).is('deleted_at', null),
+    supabase.from('wips').select('id', { count: 'exact', head: true }).eq('author_id', profile.id).is('deleted_at', null).eq('is_draft', false),
+    supabase.from('post_mortems').select('id', { count: 'exact', head: true }).eq('author_id', profile.id).is('deleted_at', null)
+  ]);
+
+  const stats = {
+    spark_count: sparksRes.count || 0,
+    wip_count: wipsRes.count || 0,
+    pm_count: pmsRes.count || 0,
+  };
+
+  // 4. Badges (Empty for now until user_badges table is ready)
+  const badges: Badge[] = [];
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 px-4 py-8">
