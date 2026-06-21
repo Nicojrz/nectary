@@ -53,7 +53,10 @@ export async function GET(request: Request) {
         q = q.contains("categories", [category]);
       }
       
-      promises.push(q.then(res => { sparksData = res.data || []; }));
+      promises.push(q.then(res => {
+        if (res.error) throw res.error;
+        sparksData = res.data || [];
+      }));
     }
 
     // 2. Fetch WIPs
@@ -73,7 +76,10 @@ export async function GET(request: Request) {
         q = q.contains("categories", [category]);
       }
       
-      promises.push(q.then(res => { wipsData = res.data || []; }));
+      promises.push(q.then(res => {
+        if (res.error) throw res.error;
+        wipsData = res.data || [];
+      }));
     }
 
     // 3. Fetch Post-Mortems
@@ -92,7 +98,10 @@ export async function GET(request: Request) {
         q = q.contains("categories", [category]);
       }
       
-      promises.push(q.then(res => { pmData = res.data || []; }));
+      promises.push(q.then(res => {
+        if (res.error) throw res.error;
+        pmData = res.data || [];
+      }));
     }
 
     await Promise.all(promises);
@@ -125,7 +134,7 @@ export async function GET(request: Request) {
       title: w.title,
       summary: w.description,
       status: w.status,
-      progress: w.status === "completed" ? 100 : w.status === "blocked" ? 40 : 10,
+      progress: w.status === "resolved" ? 100 : w.status === "blocked" ? 40 : 10,
       currentBlock: w.current_block,
       wordCount: 0,
       createdAt: w.created_at,
@@ -153,11 +162,10 @@ export async function GET(request: Request) {
     // Simple pagination / limit
     const paginatedItems = allPosts.slice(0, 50);
 
-    return NextResponse.json({
-      items: paginatedItems,
-      nextCursor: null,
-      hasMore: false,
-    });
+    return NextResponse.json(
+      { items: paginatedItems, nextCursor: null, hasMore: false },
+      { headers: { "Cache-Control": "no-store, max-age=0" } },
+    );
 
   } catch (error) {
     console.error("Feed error:", error);

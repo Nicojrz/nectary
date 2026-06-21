@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { FeedFilters } from "@/components/feed/FeedFilters";
 import { FeedLayout } from "@/components/feed/FeedLayout";
 import { ProfilePanel } from "@/components/profile/ProfilePanel";
@@ -12,7 +11,7 @@ import type {
   LiteraryCategory,
   PostType,
 } from "@/types/nectary";
-import { Flame, Loader2, PenLine } from "lucide-react";
+import { AlertCircle, Flame, Loader2, PenLine, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function FeedPage() {
@@ -22,17 +21,19 @@ export default function FeedPage() {
   
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
     const fetchPosts = async () => {
       setIsLoading(true);
+      setLoadError(null);
       try {
         const params = new URLSearchParams();
         if (category !== "all") params.set("category", category);
         if (postType !== "all") params.set("type", postType);
         
-        const res = await fetch(`/api/feed?${params.toString()}`);
+        const res = await fetch(`/api/feed?${params.toString()}`, { cache: "no-store" });
         if (!res.ok) throw new Error("Error fetching feed");
         const data = await res.json();
         
@@ -41,13 +42,19 @@ export default function FeedPage() {
         }
       } catch (error) {
         console.error("Failed to fetch feed:", error);
+        if (isMounted) setLoadError("No fue posible actualizar el feed.");
       } finally {
         if (isMounted) setIsLoading(false);
       }
     };
 
-    fetchPosts();
-    return () => { isMounted = false; };
+    void fetchPosts();
+    const refreshFeed = () => { void fetchPosts(); };
+    window.addEventListener("feed-updated", refreshFeed);
+    return () => {
+      isMounted = false;
+      window.removeEventListener("feed-updated", refreshFeed);
+    };
   }, [category, postType]);
 
   const handleFork = (post: FeedPost) => {
@@ -119,6 +126,13 @@ export default function FeedPage() {
         {isLoading ? (
           <div className="flex h-40 items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+          </div>
+        ) : loadError ? (
+          <div className="flex min-h-40 flex-col items-center justify-center rounded-2xl border border-destructive/20 bg-destructive/5 p-6 text-center" role="alert">
+            <AlertCircle className="h-6 w-6 text-destructive" />
+            <p className="mt-3 font-serif text-lg text-foreground">No pudimos cargar las publicaciones</p>
+            <p className="mt-1 text-sm text-muted-foreground">{loadError}</p>
+            <Button variant="outline" className="mt-4 min-h-11 rounded-full" onClick={() => window.dispatchEvent(new CustomEvent("feed-updated"))}><RefreshCw />Intentar de nuevo</Button>
           </div>
         ) : posts.length === 0 ? (
           <div className="flex h-40 flex-col items-center justify-center rounded-2xl border border-dashed border-card/80 text-center">

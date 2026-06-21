@@ -100,6 +100,7 @@ CREATE TABLE wips (
   -- Enlace bidireccional al PM (CU-WP-03)
   post_mortem_id UUID,       -- FK añadida post-creación de post_mortems
   is_draft       BOOLEAN     NOT NULL DEFAULT FALSE,
+  version        SMALLINT    NOT NULL DEFAULT 1 CHECK (version >= 1),
   search_vector  TSVECTOR,
   deleted_at     TIMESTAMPTZ,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -115,6 +116,58 @@ CREATE INDEX idx_wips_fts        ON wips USING GIN(search_vector);
 COMMENT ON TABLE wips IS 'Proyectos en progreso. is_draft oculta del feed público.';
 
 -- ------------------------------------------------------------
+-- TABLA: wip_versions
+-- Cada comentario apunta a la revisión exacta que fue evaluada (RNF-WP-01)
+-- ------------------------------------------------------------
+CREATE TABLE wip_versions (
+  id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  wip_id        UUID        NOT NULL REFERENCES wips(id) ON DELETE CASCADE,
+  version       SMALLINT    NOT NULL CHECK (version >= 1),
+  title         TEXT        NOT NULL,
+  description   TEXT        NOT NULL,
+  current_block TEXT,
+  categories    literary_category[] NOT NULL,
+  edited_by     UUID        NOT NULL REFERENCES profiles(id),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (wip_id, version)
+);
+CREATE INDEX idx_wip_versions_wip ON wip_versions(wip_id, version DESC);
+
+CREATE OR REPLACE FUNCTION bump_wip_version()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.version = OLD.version + 1;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER trg_wip_bump_version
+  BEFORE UPDATE ON wips FOR EACH ROW
+  WHEN (OLD.title IS DISTINCT FROM NEW.title
+     OR OLD.description IS DISTINCT FROM NEW.description
+     OR OLD.current_block IS DISTINCT FROM NEW.current_block
+     OR OLD.categories IS DISTINCT FROM NEW.categories)
+  EXECUTE FUNCTION bump_wip_version();
+
+CREATE OR REPLACE FUNCTION capture_wip_version()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  INSERT INTO wip_versions(
+    wip_id, version, title, description, current_block, categories, edited_by
+  ) VALUES (
+    NEW.id, NEW.version, NEW.title, NEW.description, NEW.current_block,
+    NEW.categories, COALESCE(auth.uid(), NEW.author_id)
+  );
+  RETURN NULL;
+END;
+$$;
+CREATE TRIGGER trg_wip_capture_initial
+  AFTER INSERT ON wips FOR EACH ROW EXECUTE FUNCTION capture_wip_version();
+CREATE TRIGGER trg_wip_capture_update
+  AFTER UPDATE ON wips FOR EACH ROW
+  WHEN (OLD.version IS DISTINCT FROM NEW.version)
+  EXECUTE FUNCTION capture_wip_version();
+
+-- ------------------------------------------------------------
 -- TABLA: wip_comments  (soft delete)
 -- CU-WP-02: autor no puede comentar su propio WIP → trigger (no CHECK)
 -- BUG v1: CHECK con subquery es inválido en PostgreSQL
@@ -122,10 +175,13 @@ COMMENT ON TABLE wips IS 'Proyectos en progreso. is_draft oculta del feed públi
 CREATE TABLE wip_comments (
   id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   wip_id     UUID        NOT NULL REFERENCES wips(id) ON DELETE CASCADE,
+  wip_version SMALLINT   NOT NULL DEFAULT 1,
   author_id  UUID        NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   content    TEXT        NOT NULL CHECK (char_length(content) BETWEEN 1 AND 1000),
   deleted_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT fk_comment_wip_version
+    FOREIGN KEY (wip_id, wip_version) REFERENCES wip_versions(wip_id, version)
 );
 CREATE INDEX idx_comments_wip ON wip_comments(wip_id, created_at ASC) WHERE deleted_at IS NULL;
 CREATE INDEX idx_comments_author ON wip_comments(author_id);
@@ -169,6 +225,8 @@ CREATE TRIGGER trg_pm_updated_at
 CREATE INDEX idx_pm_author  ON post_mortems(author_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_pm_created ON post_mortems(created_at DESC) WHERE deleted_at IS NULL;
 CREATE INDEX idx_pm_wip     ON post_mortems(wip_origin_id);
+CREATE UNIQUE INDEX uq_pm_wip_origin ON post_mortems(wip_origin_id)
+  WHERE wip_origin_id IS NOT NULL AND deleted_at IS NULL;
 CREATE INDEX idx_pm_fts     ON post_mortems USING GIN(search_vector);
 COMMENT ON TABLE post_mortems IS '4 secciones obligatorias. Versionado en post_mortem_versions.';
 
@@ -196,28 +254,64 @@ CREATE TABLE post_mortem_versions (
 CREATE INDEX idx_pmv_pm ON post_mortem_versions(post_mortem_id, version DESC);
 COMMENT ON TABLE post_mortem_versions IS 'Historial inmutable de ediciones de Post-Mortems (CU-PM-01 A2).';
 
--- Trigger: snapshot automático antes de editar un PM
-CREATE OR REPLACE FUNCTION snapshot_post_mortem()
+-- Versionado: incrementa la revisión y conserva cada estado publicado.
+CREATE OR REPLACE FUNCTION bump_post_mortem_version()
 RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.version = OLD.version + 1;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER trg_pm_bump_version
+  BEFORE UPDATE ON post_mortems FOR EACH ROW
+  WHEN (OLD.title IS DISTINCT FROM NEW.title
+     OR OLD.context IS DISTINCT FROM NEW.context
+     OR OLD.solution IS DISTINCT FROM NEW.solution
+     OR OLD.failed_attempts IS DISTINCT FROM NEW.failed_attempts
+     OR OLD.lessons_learned IS DISTINCT FROM NEW.lessons_learned
+     OR OLD.categories IS DISTINCT FROM NEW.categories)
+  EXECUTE FUNCTION bump_post_mortem_version();
+
+CREATE OR REPLACE FUNCTION capture_post_mortem_version()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
   INSERT INTO post_mortem_versions(
     post_mortem_id, version, title, context,
     failed_attempts, solution, lessons_learned, edited_by
   ) VALUES (
-    OLD.id, OLD.version, OLD.title, OLD.context,
-    OLD.failed_attempts, OLD.solution, OLD.lessons_learned, auth.uid()
+    NEW.id, NEW.version, NEW.title, NEW.context,
+    NEW.failed_attempts, NEW.solution, NEW.lessons_learned,
+    COALESCE(auth.uid(), NEW.author_id)
   );
-  NEW.version = OLD.version + 1;
-  RETURN NEW;
+  RETURN NULL;
 END;
 $$;
-CREATE TRIGGER trg_pm_snapshot
-  BEFORE UPDATE ON post_mortems FOR EACH ROW
-  WHEN (OLD.context IS DISTINCT FROM NEW.context
-     OR OLD.solution IS DISTINCT FROM NEW.solution
-     OR OLD.failed_attempts IS DISTINCT FROM NEW.failed_attempts
-     OR OLD.lessons_learned IS DISTINCT FROM NEW.lessons_learned)
-  EXECUTE FUNCTION snapshot_post_mortem();
+CREATE TRIGGER trg_pm_capture_initial
+  AFTER INSERT ON post_mortems FOR EACH ROW
+  EXECUTE FUNCTION capture_post_mortem_version();
+CREATE TRIGGER trg_pm_capture_update
+  AFTER UPDATE ON post_mortems FOR EACH ROW
+  WHEN (OLD.version IS DISTINCT FROM NEW.version)
+  EXECUTE FUNCTION capture_post_mortem_version();
+
+-- Mantiene visible el vínculo en ambos sentidos (RF-PM-02).
+CREATE OR REPLACE FUNCTION link_post_mortem_wip()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  IF TG_OP = 'UPDATE' AND OLD.wip_origin_id IS DISTINCT FROM NEW.wip_origin_id
+     AND OLD.wip_origin_id IS NOT NULL THEN
+    UPDATE wips SET post_mortem_id = NULL
+    WHERE id = OLD.wip_origin_id AND post_mortem_id = NEW.id;
+  END IF;
+  IF NEW.wip_origin_id IS NOT NULL THEN
+    UPDATE wips SET post_mortem_id = NEW.id WHERE id = NEW.wip_origin_id;
+  END IF;
+  RETURN NULL;
+END;
+$$;
+CREATE TRIGGER trg_pm_link_wip
+  AFTER INSERT OR UPDATE OF wip_origin_id ON post_mortems FOR EACH ROW
+  EXECUTE FUNCTION link_post_mortem_wip();
 
 -- ------------------------------------------------------------
 -- TABLA: forks  (árbol con ltree)
@@ -324,6 +418,36 @@ $$;
 CREATE TRIGGER trg_xp_accumulate
   AFTER INSERT ON xp_events FOR EACH ROW EXECUTE FUNCTION accumulate_xp();
 
+-- "Me desbloqueó": contador durable + XP idempotente para el autor (RF-PM-04).
+CREATE OR REPLACE FUNCTION maintain_post_mortem_useful()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  pm_author UUID;
+  xp_points SMALLINT;
+BEGIN
+  IF TG_OP = 'INSERT' AND NEW.target_type = 'post-mortem' AND NEW.emoji = '🔥' THEN
+    SELECT author_id INTO pm_author FROM post_mortems WHERE id = NEW.target_id;
+    IF pm_author = NEW.user_id THEN
+      RAISE EXCEPTION 'No puedes marcar como útil tu propio Post-Mortem';
+    END IF;
+    UPDATE post_mortems SET unblocked_count = unblocked_count + 1 WHERE id = NEW.target_id;
+    SELECT points INTO xp_points FROM xp_config WHERE action_type = 'post_mortem_unblocked';
+    INSERT INTO xp_events(user_id, action_type, points, reference_id, idempotency_key)
+    VALUES (
+      pm_author, 'post_mortem_unblocked', xp_points, NEW.target_id,
+      'post_mortem_unblocked:' || NEW.user_id || ':' || NEW.target_id
+    ) ON CONFLICT (idempotency_key) DO NOTHING;
+  ELSIF TG_OP = 'DELETE' AND OLD.target_type = 'post-mortem' AND OLD.emoji = '🔥' THEN
+    UPDATE post_mortems SET unblocked_count = GREATEST(unblocked_count - 1, 0)
+    WHERE id = OLD.target_id;
+  END IF;
+  RETURN NULL;
+END;
+$$;
+CREATE TRIGGER trg_post_mortem_useful
+  AFTER INSERT OR DELETE ON reactions FOR EACH ROW
+  EXECUTE FUNCTION maintain_post_mortem_useful();
+
 -- ------------------------------------------------------------
 -- TABLA: badges y user_badges
 -- ------------------------------------------------------------
@@ -400,7 +524,10 @@ BEGIN
   NEW.search_vector :=
     setweight(to_tsvector('spanish', unaccent(COALESCE(NEW.title,''))), 'A') ||
     setweight(to_tsvector('spanish', unaccent(COALESCE(NEW.context,''))), 'B') ||
-    setweight(to_tsvector('spanish', unaccent(COALESCE(NEW.lessons_learned,''))), 'C');
+    setweight(to_tsvector('spanish', unaccent(COALESCE(NEW.solution,''))), 'B') ||
+    setweight(to_tsvector('spanish', unaccent(COALESCE(NEW.failed_attempts,''))), 'C') ||
+    setweight(to_tsvector('spanish', unaccent(COALESCE(NEW.lessons_learned,''))), 'C') ||
+    setweight(to_tsvector('spanish', unaccent(array_to_string(NEW.tags,' '))), 'D');
   RETURN NEW;
 END;
 $$;
@@ -487,6 +614,7 @@ $$;
 ALTER TABLE profiles           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sparks             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wips               ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wip_versions       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wip_comments       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE post_mortems       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE post_mortem_versions ENABLE ROW LEVEL SECURITY;
@@ -512,6 +640,9 @@ CREATE POLICY "wips_select_public"    ON wips FOR SELECT
 CREATE POLICY "wips_insert_own"       ON wips FOR INSERT WITH CHECK (auth.uid() = author_id);
 CREATE POLICY "wips_update_own"       ON wips FOR UPDATE USING (auth.uid() = author_id);
 CREATE POLICY "wips_delete_own"       ON wips FOR DELETE USING (auth.uid() = author_id);
+
+-- WIP Versions (historial inmutable, solo lectura)
+CREATE POLICY "wip_versions_select"   ON wip_versions FOR SELECT USING (true);
 
 -- WIP Comments
 CREATE POLICY "comments_select_all"   ON wip_comments FOR SELECT USING (deleted_at IS NULL);

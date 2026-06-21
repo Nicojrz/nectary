@@ -73,8 +73,8 @@ npm run dev
 | Auth (GU) | M1 | Completado | Formulario, validación, PKCE Callback y UI lista |
 | Sparks (SP) | M2 | Stub | Implementar creación + vista de detalle |
 | Feed (FD) | M2 | En Progreso | Integración de tarjetas y navegación a perfiles lista |
-| WIPs (WP) | M3 | Stub | Implementar CRUD + cambio de estado |
-| Post-Mortems (PM) | M3 | Stub | Implementar editor de 4 secciones |
+| WIPs (WP) | M3 | Implementado | Aplicar migración `20260621150000_wip_versions.sql` en Supabase |
+| Post-Mortems (PM) | M3 | Implementado | Aplicar migración `20260621160000_post_mortem_module.sql` en Supabase |
 | Forking (FK) | M4 | Stub | Implementar modal de fork + árbol con `ltree` |
 | Reacciones | M4 | Stub | Conectar `/api/reactions` con optimistic UI |
 | Gamificación (KM) | M5 | Stub | Conectar XP events y vista materializada del leaderboard |

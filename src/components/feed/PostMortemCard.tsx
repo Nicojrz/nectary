@@ -8,6 +8,7 @@ import { AuthorChip } from "@/components/profile/AuthorChip";
 import { ReactionBar } from "@/components/shared/ReactionBar";
 import { ArrowRight, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface PostMortemCardProps {
   post: PostMortemPost;
@@ -20,7 +21,7 @@ export function PostMortemCard({ post, onFork, className }: PostMortemCardProps)
   return (
     <article
       className={cn(
-        "group relative overflow-hidden rounded-[2rem] border border-card/80 bg-card/80 shadow-card backdrop-blur-xl transition-all duration-300",
+        "group relative overflow-hidden rounded-[2rem] border border-card/80 bg-card/80 shadow-card backdrop-blur-xl transition-[border-color,box-shadow] duration-200",
         "hover:shadow-lift hover:border-primary/15",
         className,
       )}
@@ -36,21 +37,24 @@ export function PostMortemCard({ post, onFork, className }: PostMortemCardProps)
           </div>
         </div>
 
-        <h3 className="font-serif text-3xl leading-tight text-foreground">{post.title}</h3>
-        <p className="mt-3 font-serif text-lg leading-relaxed text-foreground/80">{post.body}</p>
+        <h3 className="max-w-3xl font-serif text-3xl leading-tight text-foreground">
+          <Link className="rounded-sm outline-none transition-colors hover:text-postmortem focus-visible:ring-2 focus-visible:ring-postmortem" href={`/post-mortem/${post.id}`}>
+            {post.title}
+          </Link>
+        </h3>
+        <p className="mt-3 max-w-prose font-serif text-lg leading-7 text-foreground/80">{post.body}</p>
 
         <div className="mt-4 flex gap-2.5 rounded-xl border border-postmortem/20 bg-postmortem-soft/60 p-3">
           <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-postmortem" />
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wide text-postmortem">Lesson learned</p>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-postmortem">Lección principal</p>
             <p className="mt-0.5 text-sm font-medium leading-relaxed text-foreground">{post.lesson}</p>
           </div>
         </div>
 
         <div className="mt-6 flex justify-end border-t border-border/60 pt-5">
-          <Button variant="outline" size="sm" onClick={onFork} className="rounded-full bg-card/50">
-            Leer la reflexión completa
-            <ArrowRight className="h-3.5 w-3.5" />
+          <Button asChild variant="outline" className="min-h-11 rounded-full bg-card/50">
+            <Link href={`/post-mortem/${post.id}`}>Leer la reflexión completa<ArrowRight className="h-3.5 w-3.5" /></Link>
           </Button>
         </div>
         <ReactionBar className="mt-3" reactions={post.reactions} forks={post.forks} onFork={onFork} />
@@ -58,6 +62,4 @@ export function PostMortemCard({ post, onFork, className }: PostMortemCardProps)
     </article>
   );
 }
-
-
 

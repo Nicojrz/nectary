@@ -3,7 +3,7 @@
 export type LiteraryCategory = "cuento" | "poesia" | "novela" | "ensayo";
 export type PostType = "spark" | "wip" | "postmortem";
 export type CreativeState = "flow" | "mild" | "severe";
-export type WipStatus = "in-progress" | "blocked" | "completed";
+export type WipStatus = "in-progress" | "blocked" | "resolved";
 
 export interface CategoryMeta {
   id: LiteraryCategory;

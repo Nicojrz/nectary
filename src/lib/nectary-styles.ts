@@ -75,8 +75,8 @@ export const WIP_STATUS_STYLES: Record<
     chip: "bg-destructive/10 text-destructive",
     dot: "bg-destructive",
   },
-  completed: {
-    label: "Completed",
+  resolved: {
+    label: "Resuelto",
     chip: "bg-ensayo-soft text-ensayo",
     dot: "bg-ensayo",
   },

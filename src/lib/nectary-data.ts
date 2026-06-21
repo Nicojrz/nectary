@@ -110,7 +110,7 @@ export const FEED_POSTS: FeedPost[] = [
     author: authors.saga,
     title: "Salt & Static",
     summary: "A short story cycle set in a coastal town where the radio only plays the future.",
-    status: "completed",
+    status: "resolved",
     progress: 100,
     wordCount: 22100,
     createdAt: "1d",
@@ -118,4 +118,3 @@ export const FEED_POSTS: FeedPost[] = [
     forks: 19,
   },
 ];
-

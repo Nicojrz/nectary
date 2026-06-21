@@ -103,6 +103,8 @@ export interface WIP {
   /** Current creative block the author is experiencing */
   currentBlock: string | null;
   status: WIPStatus;
+  /** Immutable revision number used by version-specific comments (RNF-WP-01) */
+  version: number;
   categories: LiteraryCategory[];
   tags: string[];
   commentCount: number;
@@ -120,6 +122,8 @@ export interface Comment {
   authorId: string;
   author?: User;
   wipId: string;
+  /** WIP revision this feedback refers to (RF-WP-02) */
+  wipVersion: number;
   content: string;
   createdAt: Date;
 }

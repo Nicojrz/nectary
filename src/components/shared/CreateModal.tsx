@@ -91,12 +91,12 @@ export function CreateModal({ open, onClose, initialType = "spark" }: CreateModa
       <div className="mx-auto max-w-6xl">
         <header className="mb-5 flex items-center justify-between">
           <div><p className="font-serif text-2xl text-foreground">Nectary</p><p className="text-xs text-muted-foreground">Tu espacio para pensar y escribir</p></div>
-          <Button variant="outline" size="icon" onClick={onClose} aria-label="Cerrar estudio" className="rounded-full bg-card/60"><X /></Button>
+          <Button variant="outline" size="icon" onClick={onClose} aria-label="Cerrar estudio" className="h-11 w-11 rounded-full bg-card/60"><X /></Button>
         </header>
 
         <nav className="mb-5 grid grid-cols-3 gap-2 rounded-2xl border border-border/60 bg-card/50 p-1.5" aria-label="Tipo de publicación">
           {([["spark", "Spark", Feather], ["wip", "WIP", BookOpen], ["postmortem", "Post-Mortem", HeartCrack]] as const).map(([type, label, Icon]) => (
-            <Button key={type} variant="ghost" onClick={() => setPostType(type)} className={cn("rounded-xl", postType === type && "bg-background text-primary shadow-soft")}><Icon className="h-4 w-4" />{label}</Button>
+            <Button key={type} variant="ghost" onClick={() => setPostType(type)} className={cn("min-h-11 rounded-xl", postType === type && "bg-background text-primary shadow-soft")}><Icon className="h-4 w-4" />{label}</Button>
           ))}
         </nav>
 
@@ -157,7 +157,7 @@ export function CreateModal({ open, onClose, initialType = "spark" }: CreateModa
               </Button>
             </div>
           </section>
-        ) : <WritingWorkspace mode={postType} />}
+        ) : <WritingWorkspace mode={postType} onCreated={onClose} />}
       </div>
     </div>
   );
