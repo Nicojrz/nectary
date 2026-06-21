@@ -70,15 +70,15 @@ npm run dev
 
 | Módulo | Miembro | Estado | Siguiente paso |
 |--------|---------|--------|----------------|
-| Auth (GU) | M1 | Stub | Implementar formularios login/register con `supabase.auth` |
+| Auth (GU) | M1 | Completado | Formulario, validación, PKCE Callback y UI lista |
 | Sparks (SP) | M2 | Stub | Implementar creación + vista de detalle |
-| Feed (FD) | M2 | Stub | Conectar `/api/feed` con query a Supabase |
+| Feed (FD) | M2 | En Progreso | Integración de tarjetas y navegación a perfiles lista |
 | WIPs (WP) | M3 | Stub | Implementar CRUD + cambio de estado |
 | Post-Mortems (PM) | M3 | Stub | Implementar editor de 4 secciones |
 | Forking (FK) | M4 | Stub | Implementar modal de fork + árbol con `ltree` |
 | Reacciones | M4 | Stub | Conectar `/api/reactions` con optimistic UI |
 | Gamificación (KM) | M5 | Stub | Conectar XP events y vista materializada del leaderboard |
-| Perfil | M5 | Stub | Implementar vista de perfil con badges y posts |
+| Perfil | M5 | Parcial | Sub-rutas dinámicas para Sparks/WIPs listas. Faltan edición y medallas |
 
 ---
 
