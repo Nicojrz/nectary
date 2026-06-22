@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   FileText,
   History,
+  GitFork,
   Link2,
   Loader2,
   MessageSquareText,
@@ -35,6 +36,7 @@ import {
 import { CATEGORY_LABELS, WIP_STATUS_LABELS } from "@/lib/wip-domain";
 import { cn } from "@/lib/utils";
 import type { LiteraryCategory, WIPStatus } from "@/types";
+import { ForkTree } from "@/components/fork/ForkTree";
 
 interface WipRecord {
   id: string;
@@ -187,6 +189,34 @@ export function WipDetail({ id }: { id: string }) {
     }
   }
 
+  function openFork() {
+    if (!wip) return;
+    window.dispatchEvent(new CustomEvent("open-fork", {
+      detail: {
+        id: wip.id,
+        type: "wip",
+        category: wip.categories[0],
+        author: {
+          name: wip.author?.name ?? "Autor",
+          handle: "",
+          initials: "",
+          tint: "primary",
+          level: wip.author?.level ?? 1,
+        },
+        title: wip.title,
+        summary: wip.description,
+        status: wip.status,
+        progress: 0,
+        currentBlock: wip.current_block ?? undefined,
+        wordCount: 0,
+        createdAt: wip.created_at,
+        reactions: { likes: 0 },
+        forks: 0,
+        version: wip.version,
+      },
+    }));
+  }
+
   if (loading) return (
     <div className="mx-auto max-w-6xl animate-pulse space-y-6" aria-label="Cargando WIP" role="status">
       <div className="h-11 w-36 rounded-full bg-muted" />
@@ -282,6 +312,12 @@ export function WipDetail({ id }: { id: string }) {
 
           {wip.post_mortem_id && <div className="rounded-3xl border border-postmortem/20 bg-postmortem-soft/45 p-5"><div className="flex items-center gap-2 text-sm font-semibold"><Link2 className="h-4 w-4 text-postmortem" />Reflexión vinculada</div><p className="mt-2 text-xs leading-5 text-muted-foreground">Este proceso ya tiene un Post-Mortem publicado.</p><Button asChild variant="outline" className="mt-3 min-h-11 w-full rounded-xl bg-background/50"><Link href={`/post-mortem/${wip.post_mortem_id}`}>Abrir Post-Mortem</Link></Button></div>}
 
+          <div className="rounded-3xl border border-primary/15 bg-primary/5 p-5">
+            <div className="flex items-center gap-2 text-sm font-semibold"><GitFork className="h-4 w-4 text-primary" />Crear una rama</div>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">Tu versión quedará atribuida a la revisión {wip.version} de este WIP.</p>
+            <Button className="mt-3 min-h-11 w-full rounded-xl" onClick={openFork}><GitFork /> Hacer fork de la versión {wip.version}</Button>
+          </div>
+
           <div className="rounded-3xl border border-card/80 bg-card/75 p-5">
             <div className="flex items-center gap-2"><History className="h-4 w-4 text-wip" /><p className="text-sm font-semibold text-foreground">Historial</p></div>
             <div className="mt-3 space-y-2">
@@ -295,6 +331,8 @@ export function WipDetail({ id }: { id: string }) {
           </div>
         </aside>
       </div>
+
+      <ForkTree postId={wip.id} postType="wip" className="mt-6" />
 
       <section className="mt-6 rounded-3xl border border-card/80 bg-card/75 p-5 shadow-soft sm:p-8" aria-labelledby="wip-comments-title">
         <div className="flex items-start gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-wip-soft text-wip"><MessageSquareText className="h-5 w-5" /></span><div><h2 id="wip-comments-title" className="font-serif text-2xl">Comentarios de colaboradores</h2><p className="mt-1 text-sm leading-6 text-muted-foreground">Cada comentario queda ligado a la versión exacta que fue revisada.</p></div></div>

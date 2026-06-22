@@ -72,7 +72,7 @@ export function ReactionBar({ postId, postType, reactions, forks, onFork, commen
         <span className="tabular-nums">{likesCount}</span>
       </Button>
 
-      <span className="mx-0.5 h-4 w-px bg-border" aria-hidden />
+      {onFork && <><span className="mx-0.5 h-4 w-px bg-border" aria-hidden />
 
       <Button
         type="button"
@@ -86,7 +86,7 @@ export function ReactionBar({ postId, postType, reactions, forks, onFork, commen
       >
         <GitFork className="h-3.5 w-3.5" />
         <span className="tabular-nums">{forks}</span>
-      </Button>
+      </Button></>}
 
       {comments !== undefined && (
         <Button

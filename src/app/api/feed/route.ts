@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import type { FeedPost, SparkPost, WipPost, PostMortemPost } from "@/types/nectary";
+import type { FeedPost, ForkOrigin, LiteraryCategory, SparkPost, WipPost, PostMortemPost, WipStatus } from "@/types/nectary";
+
+interface AuthorRow { id: string; name: string; avatar_url: string | null; level: number }
+interface SparkRow { id: string; content: string; categories: LiteraryCategory[]; fork_count: number; created_at: string; author: AuthorRow | null }
+interface WipRow { id: string; title: string; description: string; categories: LiteraryCategory[]; status: WipStatus; current_block: string | null; fork_count: number; version: number; created_at: string; author: AuthorRow | null }
+interface PostMortemRow { id: string; title: string; context: string; lessons_learned: string; categories: LiteraryCategory[]; created_at: string; author: AuthorRow | null }
+interface SourceRecord { id: string; title: string; author_id: string }
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -30,9 +36,9 @@ export async function GET(request: Request) {
   });
 
   try {
-    let sparksData: any[] = [];
-    let wipsData: any[] = [];
-    let pmData: any[] = [];
+    let sparksData: SparkRow[] = [];
+    let wipsData: WipRow[] = [];
+    let pmData: PostMortemRow[] = [];
 
     // Base query promises
     const promises = [];
@@ -55,7 +61,7 @@ export async function GET(request: Request) {
       
       promises.push(q.then(res => {
         if (res.error) throw res.error;
-        sparksData = res.data || [];
+        sparksData = (res.data || []) as unknown as SparkRow[];
       }));
     }
 
@@ -78,7 +84,7 @@ export async function GET(request: Request) {
       
       promises.push(q.then(res => {
         if (res.error) throw res.error;
-        wipsData = res.data || [];
+        wipsData = (res.data || []) as unknown as WipRow[];
       }));
     }
 
@@ -100,14 +106,14 @@ export async function GET(request: Request) {
       
       promises.push(q.then(res => {
         if (res.error) throw res.error;
-        pmData = res.data || [];
+        pmData = (res.data || []) as unknown as PostMortemRow[];
       }));
     }
 
     await Promise.all(promises);
 
     // Mappers
-    const mapAuthor = (author: any) => ({
+    const mapAuthor = (author: AuthorRow | null) => ({
       name: author?.name || "Unknown",
       handle: author?.name?.toLowerCase().replace(/\s+/g, "") || "user",
       initials: author?.name?.substring(0, 2).toUpperCase() || "U",
@@ -124,6 +130,7 @@ export async function GET(request: Request) {
       createdAt: s.created_at,
       reactions: { likes: 0 }, // Reactions need to be fetched separately due to polymorphic relations
       forks: s.fork_count || 0,
+      version: 1,
     }));
 
     const mappedWips: WipPost[] = wipsData.map((w) => ({
@@ -135,11 +142,12 @@ export async function GET(request: Request) {
       summary: w.description,
       status: w.status,
       progress: w.status === "resolved" ? 100 : w.status === "blocked" ? 40 : 10,
-      currentBlock: w.current_block,
+      currentBlock: w.current_block ?? undefined,
       wordCount: 0,
       createdAt: w.created_at,
       reactions: { likes: 0 },
       forks: w.fork_count || 0,
+      version: w.version || 1,
     }));
 
     const mappedPms: PostMortemPost[] = pmData.map((p) => ({
@@ -167,14 +175,14 @@ export async function GET(request: Request) {
     const { data: authData } = await supabase.auth.getUser();
     const currentUserId = authData?.user?.id;
 
-    let likesMap: Record<string, { count: number, userLiked: boolean }> = {};
+    const likesMap: Record<string, { count: number, userLiked: boolean }> = {};
+    const originMap: Record<string, ForkOrigin> = {};
 
     if (postIds.length > 0) {
-      const { data: reactionsData } = await supabase
-        .from("reactions")
-        .select("target_id, user_id")
-        .eq("emoji", "👏")
-        .in("target_id", postIds);
+      const [{ data: reactionsData }, { data: forkRows }] = await Promise.all([
+        supabase.from("reactions").select("target_id, user_id").eq("emoji", "👏").in("target_id", postIds),
+        supabase.from("forks").select("result_id,source_id,source_type,source_version,motivation").in("result_id", postIds),
+      ]);
 
       if (reactionsData) {
         reactionsData.forEach((r) => {
@@ -187,6 +195,39 @@ export async function GET(request: Request) {
           }
         });
       }
+
+      if (forkRows?.length) {
+        const sparkIds = forkRows.filter((row) => row.source_type === "spark").map((row) => row.source_id);
+        const wipIds = forkRows.filter((row) => row.source_type === "wip").map((row) => row.source_id);
+        const sourcesSparks = sparkIds.length
+          ? (await supabase.from("sparks").select("id,content,author_id").in("id", sparkIds)).data ?? []
+          : [];
+        const sourcesWips = wipIds.length
+          ? (await supabase.from("wips").select("id,title,author_id").in("id", wipIds)).data ?? []
+          : [];
+        const sources: SourceRecord[] = [
+          ...sourcesSparks.map((item) => ({ id: item.id, author_id: item.author_id, title: item.content.slice(0, 90) })),
+          ...sourcesWips.map((item) => ({ id: item.id, author_id: item.author_id, title: item.title })),
+        ];
+        const authorIds = [...new Set(sources.map((item) => item.author_id))];
+        const { data: sourceAuthors } = authorIds.length
+          ? await supabase.from("profiles").select("id,name").in("id", authorIds)
+          : { data: [] };
+        const sourceById = new Map(sources.map((item) => [item.id, item]));
+        const authorById = new Map((sourceAuthors ?? []).map((item) => [item.id, item.name]));
+
+        for (const fork of forkRows) {
+          const source = sourceById.get(fork.source_id);
+          originMap[fork.result_id] = {
+            sourceId: fork.source_id,
+            sourceType: fork.source_type,
+            sourceVersion: fork.source_version,
+            authorName: source ? authorById.get(source.author_id) ?? "Autor desconocido" : "Autor desconocido",
+            title: source?.title ?? "[Contenido eliminado]",
+            motivation: fork.motivation,
+          };
+        }
+      }
     }
 
     // Inject reactions into paginated items
@@ -197,7 +238,8 @@ export async function GET(request: Request) {
         reactions: {
           likes: postReactionData.count,
           userHasLiked: postReactionData.userLiked,
-        }
+        },
+        forkOrigin: originMap[post.id],
       };
     });
 

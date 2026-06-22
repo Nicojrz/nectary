@@ -1,88 +1,88 @@
-import { cn } from "@/lib/utils";
-import { GitFork, GitCommitHorizontal } from "lucide-react";
+"use client";
 
-interface ForkNode {
-  author: string;
-  initials: string;
-  tint: string;
-  label: string;
-  time: string;
-  depth: number; // 0 = root trunk, 1 = first fork level, 2 = nested
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { GitCommitHorizontal, GitFork, Loader2 } from "lucide-react";
+import { CATEGORY_LABELS } from "@/lib/wip-domain";
+import type { LiteraryCategory } from "@/types/nectary";
+
+interface ForkTreeNode {
+  forkId: string | null;
+  postId: string;
+  postType: "spark" | "wip";
+  sourceVersion: number;
+  motivation: string | null;
+  authorName: string;
+  title: string;
+  category: LiteraryCategory | null;
+  originalDeleted: boolean;
+  children: ForkTreeNode[];
 }
 
-const NODES: ForkNode[] = [
-  { author: "Iván Reyes", initials: "IR", tint: "bg-poesia-soft text-poesia", label: "Original spark", time: "2h", depth: 0 },
-  { author: "Mara Solano", initials: "MS", tint: "bg-cuento-soft text-cuento", label: "Forked → reframed as prose", time: "1h", depth: 1 },
-  { author: "Téo Marchetti", initials: "TM", tint: "bg-ensayo-soft text-ensayo", label: "Forked → essay angle", time: "48m", depth: 1 },
-  { author: "Lin Park", initials: "LP", tint: "bg-accent text-primary", label: "Forked Mara's branch", time: "22m", depth: 2 },
-];
+export function ForkTree({ postId, postType, className = "" }: { postId: string; postType: "spark" | "wip"; className?: string }) {
+  const [tree, setTree] = useState<ForkTreeNode | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export function ForkTree({ className }: { className?: string }) {
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/forks?sourceId=${postId}&sourceType=${postType}`, { cache: "no-store" });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "No fue posible cargar las ramas");
+        if (mounted) setTree(payload.tree);
+      } catch (loadError) {
+        if (mounted) setError(loadError instanceof Error ? loadError.message : "No fue posible cargar las ramas");
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+    void load();
+    return () => { mounted = false; };
+  }, [postId, postType]);
+
   return (
-    <div className={cn("rounded-2xl border border-border bg-card p-5 shadow-card", className)}>
-      <div className="mb-1 flex items-center gap-2 text-sm font-bold text-foreground">
+    <section className={`rounded-3xl border border-card/80 bg-card/75 p-5 shadow-soft sm:p-6 ${className}`} aria-labelledby={`fork-tree-${postId}`}>
+      <div className="flex items-center gap-2">
         <GitFork className="h-4 w-4 text-primary" />
-        Fork tree
+        <h2 id={`fork-tree-${postId}`} className="text-sm font-semibold">Trazabilidad de la idea</h2>
       </div>
-      <p className="mb-4 text-xs text-muted-foreground">
-        How <span className="font-semibold text-foreground">“The forgetful lighthouse”</span> branched
-      </p>
+      <p className="mt-1 text-xs leading-5 text-muted-foreground">Cada rama conserva su origen, versión y motivación.</p>
 
-      <ol className="relative">
-        {NODES.map((node, i) => {
-          const isLast = i === NODES.length - 1;
-          const indent = node.depth * 24;
-          return (
-            <li key={i} className="relative flex gap-3 pb-5 last:pb-0" style={{ paddingLeft: indent }}>
-              {/* vertical connector */}
-              {!isLast && (
-                <span
-                  className="absolute top-7 w-px bg-border"
-                  style={{ left: indent + 13, bottom: 0 }}
-                  aria-hidden
-                />
-              )}
-              {/* branch elbow for forks */}
-              {node.depth > 0 && (
-                <span
-                  className="absolute top-3.5 h-px bg-border"
-                  style={{ left: indent - 11, width: 11 }}
-                  aria-hidden
-                />
-              )}
-
-              {/* node dot / avatar */}
-              <span
-                className={cn(
-                  "relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ring-4 ring-card",
-                  node.tint,
-                )}
-              >
-                {node.initials}
-              </span>
-
-              <div className="min-w-0 pt-0.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-semibold text-foreground">{node.author}</span>
-                  {node.depth === 0 ? (
-                    <GitCommitHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
-                  ) : (
-                    <GitFork className="h-3 w-3 text-muted-foreground" />
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {node.label} · {node.time}
-                </p>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
-
-      <button className="mt-1 w-full rounded-xl border border-border bg-secondary/50 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
-        View full graph
-      </button>
-    </div>
+      {loading ? <div className="flex min-h-24 items-center justify-center"><Loader2 className="h-5 w-5 animate-spin text-primary" /><span className="sr-only">Cargando árbol</span></div>
+        : error ? <p className="mt-4 text-sm text-destructive" role="alert">{error}</p>
+        : tree ? <div className="mt-5"><TreeNode node={tree} currentId={postId} /></div>
+        : <p className="mt-4 text-sm text-muted-foreground">No existe trazabilidad para este texto.</p>}
+    </section>
   );
 }
 
+function TreeNode({ node, currentId }: { node: ForkTreeNode; currentId: string }) {
+  const current = node.postId === currentId;
+  return (
+    <div>
+      <div className={`relative rounded-2xl border p-3 ${current ? "border-primary/35 bg-primary/8" : "border-border/70 bg-background/50"}`}>
+        <div className="flex gap-2.5">
+          <GitCommitHorizontal className={`mt-0.5 h-4 w-4 shrink-0 ${current ? "text-primary" : "text-muted-foreground"}`} />
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              <span>{node.forkId ? "Fork" : "Original"}</span>
+              {node.category && <span>· {CATEGORY_LABELS[node.category]}</span>}
+              {current && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-primary">Estás aquí</span>}
+            </div>
+            {node.originalDeleted ? <p className="mt-1 font-medium text-muted-foreground">[Contenido eliminado]</p> : <Link href={`/${node.postType}/${node.postId}`} className="mt-1 block truncate font-medium text-foreground underline-offset-4 hover:text-primary hover:underline">{node.title}</Link>}
+            <p className="mt-0.5 text-xs text-muted-foreground">{node.authorName}{node.forkId ? ` · desde versión ${node.sourceVersion}` : ""}</p>
+            {node.motivation && <p className="mt-2 text-xs italic leading-5 text-foreground/70">“{node.motivation}”</p>}
+          </div>
+        </div>
+      </div>
+      {node.children.length > 0 && (
+        <div className="ml-4 space-y-3 border-l border-primary/20 py-3 pl-4">
+          {node.children.map((child) => <TreeNode key={child.postId} node={child} currentId={currentId} />)}
+        </div>
+      )}
+    </div>
+  );
+}

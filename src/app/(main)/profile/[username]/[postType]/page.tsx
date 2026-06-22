@@ -4,7 +4,21 @@ import { ArrowLeft, Feather, BookOpen, HeartCrack } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FeedLayout } from "@/components/feed/FeedLayout";
 import { Button } from "@/components/ui/button";
-import type { FeedPost, Author } from "@/types/nectary";
+import type { FeedPost, Author, LiteraryCategory, WipStatus } from "@/types/nectary";
+
+interface ProfilePostRow {
+  id: string;
+  categories?: LiteraryCategory[];
+  created_at: string;
+  fork_count?: number;
+  content?: string;
+  title?: string;
+  description?: string;
+  status?: WipStatus;
+  version?: number;
+  context?: string;
+  lessons_learned?: string;
+}
 
 // Tipos permitidos
 type PostTypeRoute = "sparks" | "wips" | "post-mortems";
@@ -74,13 +88,13 @@ export default async function ProfilePostsPage({
   const { data: postsRaw } = await query;
 
   // 4. Mapear a FeedPost
-  const posts: FeedPost[] = (postsRaw || []).map((p: any) => {
+  const posts: FeedPost[] = ((postsRaw || []) as unknown as ProfilePostRow[]).map((p) => {
     const base = {
       id: p.id,
       author,
-      category: p.category || "cuento",
+      category: p.categories?.[0] || "cuento",
       createdAt: new Date(p.created_at).toLocaleDateString("es-MX", { day: "numeric", month: "short" }),
-      reactions: { likes: p.likes_count || 0 },
+      reactions: { likes: 0 },
       forks: p.fork_count || 0,
     };
 
@@ -91,26 +105,22 @@ export default async function ProfilePostsPage({
         ...base, 
         type: "wip", 
         title: p.title || "Sin título",
-        summary: p.summary || p.content || "",
+        summary: p.description || "",
         status: p.status || "in-progress",
-        progress: p.progress || 0,
-        wordCount: p.word_count || 0
+        progress: p.status === "resolved" ? 100 : p.status === "blocked" ? 40 : 10,
+        wordCount: p.description?.trim().split(/\s+/).filter(Boolean).length || 0,
+        version: p.version || 1,
       } as FeedPost;
     } else {
       return { 
         ...base, 
         type: "postmortem", 
         title: p.title || "Post-Mortem",
-        body: p.content || "",
-        lesson: p.lesson || "Sin lección"
+        body: p.context || "",
+        lesson: p.lessons_learned || "Sin lección"
       } as FeedPost;
     }
   });
-
-  async function handleFork(post: FeedPost) {
-    "use server";
-    // Implementación de Fork a futuro
-  }
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
@@ -136,10 +146,7 @@ export default async function ProfilePostsPage({
       </div>
 
       {/* Feed List */}
-      <FeedLayout
-        posts={posts}
-        onFork={handleFork}
-      />
+      <FeedLayout posts={posts} />
     </div>
   );
 }

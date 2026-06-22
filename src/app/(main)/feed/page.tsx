@@ -57,11 +57,6 @@ export default function FeedPage() {
     };
   }, [category, postType]);
 
-  const handleFork = (post: FeedPost) => {
-    // TODO: implement fork
-    console.log("Forking post", post.id);
-  };
-
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[230px_minmax(0,680px)] xl:grid-cols-[230px_minmax(0,680px)_250px]">
       {/* left rail — filters */}
@@ -140,7 +135,7 @@ export default function FeedPage() {
             <p className="text-sm text-muted-foreground">Sé el primero en compartir algo.</p>
           </div>
         ) : (
-          <FeedLayout posts={posts} onFork={handleFork} />
+          <FeedLayout posts={posts} />
         )}
       </section>
 

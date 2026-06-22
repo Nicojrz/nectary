@@ -14,6 +14,8 @@ import { useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/navbar";
 import { CreateModal } from "@/components/shared/CreateModal";
 import type { PostType } from "@/types/nectary";
+import type { FeedPost } from "@/types/nectary";
+import { ForkDialog, type ForkableFeedPost } from "@/components/fork/ForkDialog";
 
 export default function MainLayout({
   children,
@@ -22,6 +24,7 @@ export default function MainLayout({
 }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [createType, setCreateType] = useState<PostType>("spark");
+  const [forkSource, setForkSource] = useState<ForkableFeedPost | null>(null);
 
   const openWriter = (type: PostType = "spark") => {
     setCreateType(type);
@@ -34,7 +37,15 @@ export default function MainLayout({
       openWriter(customEvent.detail || "spark");
     };
     window.addEventListener("open-compose", handleOpen);
-    return () => window.removeEventListener("open-compose", handleOpen);
+    const handleFork = (event: Event) => {
+      const post = (event as CustomEvent<FeedPost>).detail;
+      if (post?.type === "spark" || post?.type === "wip") setForkSource(post);
+    };
+    window.addEventListener("open-fork", handleFork);
+    return () => {
+      window.removeEventListener("open-compose", handleOpen);
+      window.removeEventListener("open-fork", handleFork);
+    };
   }, []);
 
   return (
@@ -53,7 +64,7 @@ export default function MainLayout({
         initialType={createType} 
         onClose={() => setCreateOpen(false)} 
       />
+      <ForkDialog source={forkSource} open={Boolean(forkSource)} onOpenChange={(next) => !next && setForkSource(null)} />
     </div>
   );
 }
-

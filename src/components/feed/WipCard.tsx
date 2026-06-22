@@ -9,6 +9,7 @@ import { ReactionBar } from "@/components/shared/ReactionBar";
 import { ArrowRight, AlertTriangle, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { ForkAttribution } from "@/components/fork/ForkAttribution";
 
 interface WipCardProps {
   post: WipPost;
@@ -55,6 +56,8 @@ export function WipCard({ post, onFork, className }: WipCardProps) {
           </Link>
         </h3>
         <p className="mt-3 max-w-prose text-base leading-7 text-muted-foreground">{post.summary}</p>
+
+        {post.forkOrigin && <ForkAttribution origin={post.forkOrigin} className="mt-5" />}
 
         {/* progress */}
         <div className="mt-4">

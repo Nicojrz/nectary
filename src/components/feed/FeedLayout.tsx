@@ -8,11 +8,16 @@ import { PostMortemCard } from "./PostMortemCard";
 
 interface FeedLayoutProps {
   posts: FeedPost[];
-  onFork: (post: FeedPost) => void;
+  onFork?: (post: FeedPost) => void;
   className?: string;
 }
 
 export function FeedLayout({ posts, onFork, className }: FeedLayoutProps) {
+  const fork = (post: FeedPost) => {
+    if (post.type === "postmortem") return;
+    if (onFork) onFork(post);
+    else window.dispatchEvent(new CustomEvent("open-fork", { detail: post }));
+  };
   if (posts.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border bg-card/50 p-12 text-center">
@@ -26,14 +31,13 @@ export function FeedLayout({ posts, onFork, className }: FeedLayoutProps) {
     <div className={cn("space-y-6", className)}>
       {posts.map((post) =>
         post.type === "spark" ? (
-          <SparkCard key={post.id} post={post} onFork={() => onFork(post)} />
+          <SparkCard key={post.id} post={post} onFork={() => fork(post)} />
         ) : post.type === "wip" ? (
-          <WipCard key={post.id} post={post} onFork={() => onFork(post)} />
+          <WipCard key={post.id} post={post} onFork={() => fork(post)} />
         ) : (
-          <PostMortemCard key={post.id} post={post} onFork={() => onFork(post)} />
+          <PostMortemCard key={post.id} post={post} />
         ),
       )}
     </div>
   );
 }
-

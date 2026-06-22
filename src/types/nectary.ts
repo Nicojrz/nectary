@@ -61,6 +61,15 @@ export interface BaseReactions {
   userHasLiked?: boolean;
 }
 
+export interface ForkOrigin {
+  sourceId: string;
+  sourceType: "spark" | "wip";
+  sourceVersion: number;
+  authorName: string;
+  title: string;
+  motivation: string;
+}
+
 export interface SparkPost {
   id: string;
   type: "spark";
@@ -70,6 +79,8 @@ export interface SparkPost {
   createdAt: string;
   reactions: BaseReactions;
   forks: number;
+  version?: 1;
+  forkOrigin?: ForkOrigin;
 }
 
 export interface WipPost {
@@ -86,6 +97,8 @@ export interface WipPost {
   createdAt: string;
   reactions: BaseReactions;
   forks: number;
+  version?: number;
+  forkOrigin?: ForkOrigin;
 }
 
 export interface PostMortemPost {

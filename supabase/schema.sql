@@ -322,6 +322,7 @@ CREATE TABLE forks (
   forker_id   UUID        NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   source_id   UUID        NOT NULL,
   source_type post_type   NOT NULL,
+  source_version SMALLINT NOT NULL DEFAULT 1 CHECK (source_version >= 1),
   result_id   UUID        NOT NULL,
   result_type post_type   NOT NULL,
   motivation  TEXT        NOT NULL CHECK (char_length(motivation) BETWEEN 1 AND 500),
@@ -329,7 +330,7 @@ CREATE TABLE forks (
   -- Ej: 'root_id.parent_id.this_id' (UUIDs sin guiones)
   tree_path   LTREE       NOT NULL,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (forker_id, source_id) -- un usuario no forkea el mismo post dos veces
+  CONSTRAINT forks_one_per_source_version UNIQUE (forker_id, source_id, source_type, source_version)
 );
 CREATE INDEX idx_forks_source    ON forks(source_id, source_type);
 CREATE INDEX idx_forks_result    ON forks(result_id);

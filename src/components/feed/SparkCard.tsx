@@ -6,6 +6,7 @@ import { PostTypeBadge } from "./PostTypeBadge";
 import { AuthorChip } from "@/components/profile/AuthorChip";
 import { ReactionBar } from "@/components/shared/ReactionBar";
 import { Quote } from "lucide-react";
+import { ForkAttribution } from "@/components/fork/ForkAttribution";
 
 interface SparkCardProps {
   post: SparkPost;
@@ -35,6 +36,8 @@ export function SparkCard({ post, onFork, className }: SparkCardProps) {
 
       <p className="font-serif text-xl leading-[1.58] text-foreground sm:text-[1.45rem]">{post.body}</p>
 
+      {post.forkOrigin && <ForkAttribution origin={post.forkOrigin} className="mt-5" />}
+
       <ReactionBar
         className="mt-6 border-t border-border/60 pt-4"
         postId={post.id}
@@ -46,5 +49,4 @@ export function SparkCard({ post, onFork, className }: SparkCardProps) {
     </article>
   );
 }
-
 
