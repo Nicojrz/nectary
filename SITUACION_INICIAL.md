@@ -91,6 +91,6 @@ npm run dev
 
 ## Cosas que TODAVÍA faltan
 
-- La vista materializada del leaderboard hay que refrescarla periódicamente. Se puede activar como **cron job** en Supabase (Database → Cron Jobs): `SELECT refresh_leaderboard();` cada hora.
-- Modal y Toast (las notificaciones) — aún no existen en `components/ui/`, hay que crearlos cuando se necesiten.
-- Tests — ninguno por ahora, definir estrategia con el equipo
+- **Leaderboard y Gamificación (M5)**: Implementar la UI del Leaderboard conectando con los puntos de experiencia (XP). Falta que la app calcule los niveles de forma visual y asigne las medallas (badges) a los escritores.
+- **Perfil Público Avanzado**: La ruta `/profile/[username]` necesita mostrar las medallas desbloqueadas y el XP total del usuario.
+- **Refresco del Leaderboard**: La vista materializada del leaderboard hay que refrescarla periódicamente. Se puede activar como **cron job** en Supabase (Database → Cron Jobs): `SELECT refresh_leaderboard();` cada hora.
