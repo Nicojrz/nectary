@@ -22,10 +22,10 @@ export function Navbar({ onCreate }: NavbarProps) {
           <Image 
             src="/logo.png" 
             alt="Nectary Logo" 
-            width={36} 
-            height={36} 
+            width={28} 
+            height={28} 
             style={{ width: "auto", height: "auto" }}
-            className="h-9 w-9 rounded-full shadow-soft object-cover"
+            className="h-7 w-7 object-cover"
           />
           <span className="hidden font-serif text-2xl text-foreground sm:block">
             Nectary

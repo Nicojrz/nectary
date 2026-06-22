@@ -9,7 +9,14 @@ export default function Home() {
       <header className="absolute inset-x-0 top-0 z-30">
         <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8" aria-label="Navegación principal">
           <Link href="/" className="flex items-center gap-2.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-soft"><Feather /></span>
+            <Image 
+              src="/logo.png" 
+              alt="Nectary Logo" 
+              width={32} 
+              height={32} 
+              style={{ width: "auto", height: "auto" }}
+              className="h-8 w-8 object-cover"
+            />
             <span className="font-serif text-2xl text-foreground">Nectary</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
@@ -80,7 +87,10 @@ export default function Home() {
 
       <footer className="border-t border-border/70 px-5 py-8 sm:px-8">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
-          <div className="flex items-center gap-2 font-serif text-xl text-foreground"><Feather className="text-primary" /> Nectary</div>
+          <div className="flex items-center gap-2 font-serif text-xl text-foreground">
+            <Image src="/logo.png" alt="Nectary Logo" width={24} height={24} style={{ width: "auto", height: "auto" }} className="h-6 w-6 object-cover" />
+            Nectary
+          </div>
           <p className="text-xs text-muted-foreground">Un lugar para escribir sin tener todas las respuestas.</p>
         </div>
       </footer>
