@@ -66,7 +66,7 @@ END;
 $$;
 CREATE TRIGGER trg_xp_reaction AFTER INSERT ON reactions FOR EACH ROW EXECUTE FUNCTION grant_xp_on_reaction();
 
--- 5. Comentario (Recibir)
+-- 5. Comentario (Dar feedback)
 CREATE OR REPLACE FUNCTION grant_xp_on_comment()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE target_author UUID; xp_pts SMALLINT;
@@ -75,7 +75,7 @@ BEGIN
   IF target_author IS NOT NULL AND target_author != NEW.author_id THEN
     SELECT points INTO xp_pts FROM xp_config WHERE action_type = 'receive_comment';
     INSERT INTO xp_events(user_id, action_type, points, reference_id, idempotency_key)
-    VALUES (target_author, 'receive_comment', xp_pts, NEW.id, 'receive_comment:' || NEW.id)
+    VALUES (NEW.author_id, 'receive_comment', xp_pts, NEW.id, 'receive_comment:' || NEW.id)
     ON CONFLICT (idempotency_key) DO NOTHING;
   END IF;
   RETURN NEW;
