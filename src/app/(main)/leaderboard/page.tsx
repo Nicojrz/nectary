@@ -4,7 +4,8 @@
  * No client-side JS required — data is fetched at request time on the server.
  */
 
-//import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
 import Image from "next/image";
 import { Trophy, Medal, Zap, Feather, BookOpen, HeartCrack } from "lucide-react";
 
@@ -208,55 +209,6 @@ function EmptyState() {
 // ─── Page (Mocked for Local Development) ───────────────────────────────────────
 
 export default async function LeaderboardPage() {
-  // Datos simulados de prueba (Mock) para desarrollo local
-  const mockEntries: LeaderboardEntry[] = [
-    {
-      rank: 1,
-      id: "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
-      name: "Gabo Márquez",
-      avatar_url: null,
-      level: 16,
-      xp_total: 1500,
-      spark_count: 12,
-      wip_count: 5,
-      pm_count: 2
-    },
-    {
-      rank: 2,
-      id: "b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e",
-      name: "Sor Juana Inés",
-      avatar_url: null,
-      level: 13,
-      xp_total: 1200,
-      spark_count: 9,
-      wip_count: 4,
-      pm_count: 1
-    },
-    {
-      rank: 3,
-      id: "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f",
-      name: "Juan Rulfo",
-      avatar_url: null,
-      level: 9,
-      xp_total: 800,
-      spark_count: 6,
-      wip_count: 2,
-      pm_count: 3
-    },
-    {
-      rank: 4,
-      id: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a",
-      name: "Julio Cortázar",
-      avatar_url: null,
-      level: 4,
-      xp_total: 300,
-      spark_count: 3,
-      wip_count: 1,
-      pm_count: 0
-    }
-  ];
-
-  /*//  ESTO ES LO QUE SE INYECTA EN SU LUGAR:
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("leaderboard")
@@ -277,28 +229,40 @@ export default async function LeaderboardPage() {
     pm_count: Number(row.pm_count),
   }));
 
-  // Hacemos exactamente los mismos cortes pero con la variable 'entries' real
   const top3 = entries.slice(0, 3);
-  const rest = entries.slice(3);*/
+  const rest = entries.slice(3);
 
-  // Separamos el podio del resto de la tabla exactamente igual que el diseño de Claude
-  const top3 = mockEntries.slice(0, 3);
-  const rest = mockEntries.slice(3);
+  async function refreshAction() {
+    "use server";
+    const supabase = await createClient();
+    await supabase.rpc("refresh_leaderboard");
+    revalidatePath("/leaderboard");
+  }
 
   return (
     <div className="mx-auto max-w-3xl space-y-8 px-4 py-8">
 
       {/* Header */}
-      <div className="space-y-1">
-        <h1 className="text-gradient-primary text-3xl font-black tracking-tight">
-          Leaderboard
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Los 50 escritores con más XP en la plataforma.
-        </p>
+      <div className="flex items-start justify-between">
+        <div className="space-y-1">
+          <h1 className="text-gradient-primary text-3xl font-black tracking-tight">
+            Leaderboard
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Los 50 escritores con más XP en la plataforma.
+          </p>
+        </div>
+        <form action={refreshAction}>
+          <button 
+            type="submit" 
+            className="rounded-full bg-white/5 border border-white/10 px-4 py-1.5 text-xs font-semibold text-muted-foreground transition hover:bg-white/10 hover:text-foreground active:scale-95"
+          >
+            Actualizar Ranking
+          </button>
+        </form>
       </div>
 
-      {mockEntries.length === 0 ? (
+      {entries.length === 0 ? (
         <EmptyState />
       ) : (
         <>
@@ -349,8 +313,7 @@ export default async function LeaderboardPage() {
 
       {/* Footer note */}
       <p className="text-center text-xs text-muted-foreground">
-        El ranking se actualiza periódicamente.{" "}
-        <span className="opacity-50">Modo de desarrollo local · Datos Simulados</span>
+        El ranking se actualiza periódicamente.
       </p>
     </div>
   );
