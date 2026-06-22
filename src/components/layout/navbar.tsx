@@ -1,7 +1,8 @@
 "use client";
+import Image from "next/image";
 import { useState } from "react";
 import type { CreativeState } from "@/types/nectary";
-import { Feather, Search, Plus, Bell } from "lucide-react";
+import { Search, Plus, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface NavbarProps {
@@ -18,9 +19,14 @@ export function Navbar({ onCreate }: NavbarProps) {
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
         {/* logo */}
         <a href="/" className="flex shrink-0 items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-soft">
-            <Feather className="h-5 w-5" strokeWidth={2.4} />
-          </span>
+          <Image 
+            src="/logo.png" 
+            alt="Nectary Logo" 
+            width={36} 
+            height={36} 
+            style={{ width: "auto", height: "auto" }}
+            className="h-9 w-9 rounded-full shadow-soft object-cover"
+          />
           <span className="hidden font-serif text-2xl text-foreground sm:block">
             Nectary
           </span>
@@ -32,7 +38,7 @@ export function Navbar({ onCreate }: NavbarProps) {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search sparks, writers, WIPs…"
+            placeholder="Buscar chispas, escritores, WIPs…"
             className="h-10 w-full rounded-full border border-card/80 bg-card/55 pl-9 pr-4 text-sm text-foreground outline-none placeholder:text-muted-foreground backdrop-blur-xl transition-all focus:border-primary/30 focus:bg-card/80 focus:ring-2 focus:ring-ring/20"
           />
         </div>

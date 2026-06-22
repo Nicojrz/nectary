@@ -18,11 +18,11 @@ const dmSerif = DM_Serif_Display({
 
 export const metadata: Metadata = {
   title: {
-    default: "Nectary — A Community for Writers",
+    default: "Nectary — Tu mesa de lectura",
     template: "%s | Nectary",
   },
   description:
-    "Nectary is an exclusive community for writers to share Sparks, document WIPs, and reflect through Post-Mortems — with idea forking and gamification.",
+    "Nectary es una comunidad exclusiva para escritores. Comparte chispas de inspiración, documenta proyectos y reflexiona sobre tus bloqueos creativos.",
   keywords: [
     "creative community",
     "writing",
