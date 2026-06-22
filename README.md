@@ -455,6 +455,8 @@ Este proyecto tiene propósitos académicos y de portfolio.
 
 ## 🤝 Equipo
 
+**Distribucion Inicial**:
+
 | Rol | Nombre |
 |------|------|
 | Miembro 1 | [Nicolas Juarez] — Auth & Middleware      |
@@ -462,4 +464,14 @@ Este proyecto tiene propósitos académicos y de portfolio.
 | Miembro 3 | [Javier Reyna] — WIPs & Post-Mortems      |
 | Miembro 4 | [Jimena Camacho] — Forking & Likes   |
 | Miembro 5 | [Dylan Martinez] — Gamificación & Perfil  |
+
+**Distribucion Final**:
+| Rol | Nombre |
+|------|------|
+| Miembro 1 | [Nicolas Juarez] — Middleware      |
+| Miembro 2 | [Javier Reyna] — Sparks, Feed, Likes & Auth          |
+| Miembro 3 | [Sebastian Jara] — WIPs, Forking & Post-Mortems      |
+| Miembro 4 | [Jimena Camacho] — Perfil   |
+| Miembro 5 | [Dylan Martinez] — Gamificación   |
+
 
