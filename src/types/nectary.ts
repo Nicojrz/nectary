@@ -109,6 +109,7 @@ export interface PostMortemPost {
   title: string;
   body: string;
   lesson: string;
+  wordCount: number;
   createdAt: string;
   reactions: BaseReactions;
   forks: number;

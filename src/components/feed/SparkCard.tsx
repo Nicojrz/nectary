@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn, truncateDynamic } from "@/lib/utils";
 import type { SparkPost } from "@/types/nectary";
 import { CATEGORY_STYLES } from "@/lib/nectary-styles";
 import { CategoryBadge } from "./CategoryBadge";
@@ -34,7 +34,7 @@ export function SparkCard({ post, onFork, className }: SparkCardProps) {
 
       <Quote className={cn("mb-1 h-5 w-5 opacity-20", cat.text)} aria-hidden />
 
-      <p className="font-serif text-xl leading-[1.58] text-foreground sm:text-[1.45rem]">{post.body}</p>
+      <p className="font-serif text-xl leading-[1.58] text-foreground sm:text-[1.45rem]">{truncateDynamic(post.body)}</p>
 
       {post.forkOrigin && <ForkAttribution origin={post.forkOrigin} className="mt-5" />}
 

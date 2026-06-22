@@ -64,6 +64,7 @@ export const FEED_POSTS: FeedPost[] = [
     title: "Why I abandoned my 90k-word draft",
     body: "I confused momentum for direction. For eight months I wrote fast and never asked what the book was actually about. By the time I stopped, I had a thousand beautiful scenes and no spine.",
     lesson: "Outline the emotional question first. Prose can wait; intent cannot.",
+    wordCount: 35,
     createdAt: "8h",
     reactions: { likes: 42 },
     forks: 12,

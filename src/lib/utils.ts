@@ -43,6 +43,26 @@ export function truncate(text: string, maxLength: number): string {
 }
 
 /**
+ * Dynamically truncate text to give a visual cue of its length.
+ * - < 100 words: show full
+ * - 100 - 200 words: truncate at 150
+ * - > 200 words: truncate at 180
+ */
+export function truncateDynamic(text: string): string {
+  if (!text) return "";
+  const words = text.trim().split(/\s+/);
+  const count = words.length;
+
+  if (count <= 100) {
+    return text;
+  } else if (count <= 200) {
+    return words.slice(0, 100).join(" ") + "…";
+  } else {
+    return words.slice(0, 150).join(" ") + "…";
+  }
+}
+
+/**
  * Generate an idempotency key for XP events (RNF-KM-01).
  */
 export function generateXPIdempotencyKey(

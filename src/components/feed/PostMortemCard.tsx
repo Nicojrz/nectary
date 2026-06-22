@@ -1,12 +1,12 @@
 "use client";
-import { cn } from "@/lib/utils";
+import { cn, truncateDynamic } from "@/lib/utils";
 import type { PostMortemPost } from "@/types/nectary";
 import { POST_TYPE_STYLES } from "@/lib/nectary-styles";
 import { CategoryBadge } from "./CategoryBadge";
 import { PostTypeBadge } from "./PostTypeBadge";
 import { AuthorChip } from "@/components/profile/AuthorChip";
 import { ReactionBar } from "@/components/shared/ReactionBar";
-import { ArrowRight, Lightbulb } from "lucide-react";
+import { ArrowRight, Lightbulb, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -42,7 +42,14 @@ export function PostMortemCard({ post, onFork, className }: PostMortemCardProps)
             {post.title}
           </Link>
         </h3>
-        <p className="mt-3 max-w-prose font-serif text-lg leading-7 text-foreground/80">{post.body}</p>
+        <p className="mt-3 max-w-prose font-serif text-lg leading-7 text-foreground/80">{truncateDynamic(post.body)}</p>
+
+        <div className="mt-4 flex items-center text-xs font-medium text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <FileText className="h-3.5 w-3.5" />
+            {post.wordCount.toLocaleString()} palabras
+          </span>
+        </div>
 
         <div className="mt-4 flex gap-2.5 rounded-xl border border-postmortem/20 bg-postmortem-soft/60 p-3">
           <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-postmortem" />

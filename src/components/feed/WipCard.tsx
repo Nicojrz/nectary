@@ -1,5 +1,5 @@
 "use client";
-import { cn } from "@/lib/utils";
+import { cn, truncateDynamic } from "@/lib/utils";
 import type { WipPost } from "@/types/nectary";
 import { WIP_STATUS_STYLES, POST_TYPE_STYLES } from "@/lib/nectary-styles";
 import { CategoryBadge } from "./CategoryBadge";
@@ -55,7 +55,7 @@ export function WipCard({ post, onFork, className }: WipCardProps) {
             {post.title}
           </Link>
         </h3>
-        <p className="mt-3 max-w-prose text-base leading-7 text-muted-foreground">{post.summary}</p>
+        <p className="mt-3 max-w-prose text-base leading-7 text-muted-foreground">{truncateDynamic(post.summary)}</p>
 
         {post.forkOrigin && <ForkAttribution origin={post.forkOrigin} className="mt-5" />}
 
