@@ -61,7 +61,7 @@ export default function FeedPage() {
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[230px_minmax(0,680px)] xl:grid-cols-[230px_minmax(0,680px)_250px]">
       {/* left rail — filters */}
       <aside className="hidden lg:block">
-        <div className="sticky space-y-5" style={{ top: "6.5rem" }}>
+        <div className="sticky space-y-5 overflow-y-auto scroll-subtle max-h-[calc(100vh-7rem)] pb-4" style={{ top: "6.5rem" }}>
           <ProfilePanel creativeState={creativeState} onCreativeStateChange={setCreativeState} />
           <FeedFilters
             category={category}
@@ -141,7 +141,7 @@ export default function FeedPage() {
 
       {/* right rail — gamification */}
       <aside className="hidden xl:block">
-        <div className="sticky space-y-5" style={{ top: "6.5rem" }}>
+        <div className="sticky space-y-5 overflow-y-auto scroll-subtle max-h-[calc(100vh-7rem)] pb-4" style={{ top: "6.5rem" }}>
           <ForkPanel />
         </div>
       </aside>
