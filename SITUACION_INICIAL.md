@@ -70,13 +70,13 @@ npm run dev
 
 | Módulo | Miembro | Estado | Siguiente paso |
 |--------|---------|--------|----------------|
-| Auth (GU) | M1 | Completado | Formulario, validación, PKCE Callback y UI lista |
-| Sparks (SP) | M2 | Stub | Implementar creación + vista de detalle |
-| Feed (FD) | M2 | En Progreso | Integración de tarjetas y navegación a perfiles lista |
-| WIPs (WP) | M3 | Implementado | Aplicar migración `20260621150000_wip_versions.sql` en Supabase |
-| Post-Mortems (PM) | M3 | Implementado | Aplicar migración `20260621160000_post_mortem_module.sql` en Supabase |
-| Forking (FK) | M4 | Stub | Implementar modal de fork + árbol con `ltree` |
-| Reacciones | M4 | Stub | Conectar `/api/reactions` con optimistic UI |
+| Auth (GU) | M1 | Completado | Autenticación y UI 100% integradas |
+| Sparks (SP) | M2 | Completado | Creación, feed y vista de detalle operando al cien |
+| Feed (FD) | M2 | Completado | Integración de tarjetas, límite dinámico, conteo de palabras y scroll lateral |
+| WIPs (WP) | M3 | Completado | Migraciones aplicadas, UI de progreso y lectura funcional |
+| Post-Mortems (PM) | M3 | Completado | Migraciones aplicadas, versión inmutable y UI lista |
+| Forking (FK) | M4 | Completado | Árbol `ltree` conectado y funcionando en frontend/backend |
+| Reacciones | M4 | Completado | Optimistic UI y persistencia en base de datos al cien |
 | Gamificación (KM) | M5 | Stub | Conectar XP events y vista materializada del leaderboard |
 | Perfil | M5 | Parcial | Sub-rutas dinámicas para Sparks/WIPs listas. Faltan edición y medallas |
 
