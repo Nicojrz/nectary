@@ -58,6 +58,7 @@ export interface Author {
 
 export interface BaseReactions {
   likes: number;
+  userHasLiked?: boolean;
 }
 
 export interface SparkPost {

@@ -162,8 +162,47 @@ export async function GET(request: Request) {
     // Simple pagination / limit
     const paginatedItems = allPosts.slice(0, 50);
 
+    // Fetch reactions for the paginated items
+    const postIds = paginatedItems.map(p => p.id);
+    const { data: authData } = await supabase.auth.getUser();
+    const currentUserId = authData?.user?.id;
+
+    let likesMap: Record<string, { count: number, userLiked: boolean }> = {};
+
+    if (postIds.length > 0) {
+      const { data: reactionsData } = await supabase
+        .from("reactions")
+        .select("target_id, user_id")
+        .eq("emoji", "👏")
+        .in("target_id", postIds);
+
+      if (reactionsData) {
+        reactionsData.forEach((r) => {
+          if (!likesMap[r.target_id]) {
+            likesMap[r.target_id] = { count: 0, userLiked: false };
+          }
+          likesMap[r.target_id].count += 1;
+          if (currentUserId && r.user_id === currentUserId) {
+            likesMap[r.target_id].userLiked = true;
+          }
+        });
+      }
+    }
+
+    // Inject reactions into paginated items
+    const finalItems = paginatedItems.map((post) => {
+      const postReactionData = likesMap[post.id] || { count: 0, userLiked: false };
+      return {
+        ...post,
+        reactions: {
+          likes: postReactionData.count,
+          userHasLiked: postReactionData.userLiked,
+        }
+      };
+    });
+
     return NextResponse.json(
-      { items: paginatedItems, nextCursor: null, hasMore: false },
+      { items: finalItems, nextCursor: null, hasMore: false },
       { headers: { "Cache-Control": "no-store, max-age=0" } },
     );
 

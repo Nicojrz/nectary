@@ -97,9 +97,14 @@ export function WipCard({ post, onFork, className }: WipCardProps) {
           </Button>
         </div>
 
-        <ReactionBar className="mt-3" reactions={post.reactions} forks={post.forks} onFork={onFork} />
-      </div>
+        <ReactionBar
+        className="mt-6 border-t border-border/60 pt-4"
+        postId={post.id}
+        postType={post.type}
+        reactions={post.reactions}
+        forks={post.forks}
+        onFork={onFork}
+      /></div>
     </article>
   );
 }
-

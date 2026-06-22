@@ -6,6 +6,8 @@ import { GitFork, MessageCircle, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ReactionBarProps {
+  postId: string;
+  postType: "spark" | "wip" | "postmortem";
   reactions: BaseReactions;
   forks: number;
   onFork?: () => void;
@@ -13,11 +15,40 @@ interface ReactionBarProps {
   className?: string;
 }
 
-export function ReactionBar({ reactions, forks, onFork, comments, className }: ReactionBarProps) {
-  const [isLiked, setIsLiked] = useState(false);
+export function ReactionBar({ postId, postType, reactions, forks, onFork, comments, className }: ReactionBarProps) {
+  const [isLiked, setIsLiked] = useState(reactions.userHasLiked || false);
+  const [localLikes, setLocalLikes] = useState(reactions.likes || 0);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const toggleLike = () => setIsLiked((prev) => !prev);
-  const likesCount = (reactions.likes ?? 0) + (isLiked ? 1 : 0);
+  const toggleLike = async () => {
+    if (isLoading) return;
+    
+    // Optimistic UI update
+    setIsLiked((prev) => !prev);
+    setLocalLikes((prev) => isLiked ? prev - 1 : prev + 1);
+    setIsLoading(true);
+
+    try {
+      const res = await fetch("/api/reactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target_id: postId, target_type: postType }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to toggle reaction");
+      }
+    } catch (error) {
+      console.error(error);
+      // Revert optimistic update
+      setIsLiked((prev) => !prev);
+      setLocalLikes((prev) => !isLiked ? prev - 1 : prev + 1);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const likesCount = localLikes;
 
   return (
     <div className={cn("flex flex-wrap items-center gap-1.5", className)}>

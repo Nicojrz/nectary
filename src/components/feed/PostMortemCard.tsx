@@ -57,9 +57,14 @@ export function PostMortemCard({ post, onFork, className }: PostMortemCardProps)
             <Link href={`/post-mortem/${post.id}`}>Leer la reflexión completa<ArrowRight className="h-3.5 w-3.5" /></Link>
           </Button>
         </div>
-        <ReactionBar className="mt-3" reactions={post.reactions} forks={post.forks} onFork={onFork} />
-      </div>
+        <ReactionBar
+        className="mt-6 border-t border-border/60 pt-4"
+        postId={post.id}
+        postType={post.type}
+        reactions={post.reactions}
+        forks={post.forks}
+        onFork={onFork}
+      /></div>
     </article>
   );
 }
-
