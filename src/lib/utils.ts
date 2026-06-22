@@ -53,12 +53,12 @@ export function truncateDynamic(text: string): string {
   const words = text.trim().split(/\s+/);
   const count = words.length;
 
-  if (count <= 100) {
+  if (count <= 50) {
     return text;
   } else if (count <= 200) {
-    return words.slice(0, 100).join(" ") + "…";
+    return words.slice(0, 60).join(" ") + "…";
   } else {
-    return words.slice(0, 150).join(" ") + "…";
+    return words.slice(0, 80).join(" ") + "…";
   }
 }
 
